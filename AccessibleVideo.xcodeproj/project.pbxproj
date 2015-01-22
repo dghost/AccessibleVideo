@@ -1,0 +1,436 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		DF048B2219E3CC9000064E81 /* Shaders.plist in Resources */ = {isa = PBXBuildFile; fileRef = DF048B2119E3CC9000064E81 /* Shaders.plist */; };
+		DF048B2419E3CCD500064E81 /* VideoFilters.plist in Resources */ = {isa = PBXBuildFile; fileRef = DF048B2319E3CCD500064E81 /* VideoFilters.plist */; };
+		DF048B2619E3F4CE00064E81 /* Sobel.metal in Sources */ = {isa = PBXBuildFile; fileRef = DF048B2519E3F4CE00064E81 /* Sobel.metal */; };
+		DF58E3F71A47EBF900020B1C /* FilterBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF58E3F61A47EBF900020B1C /* FilterBuffer.swift */; };
+		DF6A115019C8091C00D20618 /* Base.metal in Sources */ = {isa = PBXBuildFile; fileRef = DF6A114F19C8091C00D20618 /* Base.metal */; };
+		DF6A115419C8109F00D20618 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DF6A115319C8109F00D20618 /* AVFoundation.framework */; };
+		DF6A115619C810B000D20618 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DF6A115519C810B000D20618 /* CoreVideo.framework */; };
+		DF847FD91A11FE9A00AD6068 /* Canny.metal in Sources */ = {isa = PBXBuildFile; fileRef = DF847FD81A11FE9A00AD6068 /* Canny.metal */; };
+		DF9C846A1A4EB68A009C962B /* ColorBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF9C84691A4EB68A009C962B /* ColorBuffer.swift */; };
+		DF9C846C1A4F5C50009C962B /* BufferTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF9C846B1A4F5C50009C962B /* BufferTypes.swift */; };
+		DF9C846F1A4F66CE009C962B /* BlurBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF9C846E1A4F66CE009C962B /* BlurBuffer.swift */; };
+		DFAF7A0C19FFFC1800ED5B76 /* MBProgressHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = DFAF7A0B19FFFC1800ED5B76 /* MBProgressHUD.m */; };
+		DFC4CFEB1A3A1ACE00964650 /* Colorblind.metal in Sources */ = {isa = PBXBuildFile; fileRef = DFC4CFEA1A3A1ACE00964650 /* Colorblind.metal */; };
+		DFC4CFED1A3A1B6D00964650 /* Common.metal in Sources */ = {isa = PBXBuildFile; fileRef = DFC4CFEC1A3A1B6D00964650 /* Common.metal */; };
+		DFD2200B19C643BC00913975 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFD2200A19C643BC00913975 /* AppDelegate.swift */; };
+		DFD2200D19C643BC00913975 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFD2200C19C643BC00913975 /* MainViewController.swift */; };
+		DFD2201019C643BC00913975 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DFD2200E19C643BC00913975 /* Main.storyboard */; };
+		DFD2201219C643BC00913975 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DFD2201119C643BC00913975 /* Images.xcassets */; };
+		DFD2201519C643BC00913975 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = DFD2201319C643BC00913975 /* LaunchScreen.xib */; };
+		DFD2202B19C6462800913975 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DFD2202A19C6462800913975 /* Metal.framework */; };
+		DFD2202D19C6478D00913975 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DFD2202C19C6478D00913975 /* QuartzCore.framework */; };
+		DFE69F2F19E0EE140072EFAC /* CameraController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFE69F2E19E0EE140072EFAC /* CameraController.swift */; };
+		DFE69F3119E0EE870072EFAC /* FilterRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFE69F3019E0EE870072EFAC /* FilterRenderer.swift */; };
+		DFF6E11A1A104E36009A3CD8 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFF6E1191A104E36009A3CD8 /* SettingsViewController.swift */; };
+		DFF6E11E1A10796D009A3CD8 /* Blur.metal in Sources */ = {isa = PBXBuildFile; fileRef = DFF6E11D1A10796D009A3CD8 /* Blur.metal */; };
+		DFF905141A3936B100501BF0 /* ColorFilters.plist in Resources */ = {isa = PBXBuildFile; fileRef = DFF905131A3936B100501BF0 /* ColorFilters.plist */; };
+		DFFEE88F19E207B700D19FFA /* MetalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFFEE88E19E207B700D19FFA /* MetalView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		DF048B2119E3CC9000064E81 /* Shaders.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Shaders.plist; path = Shaders/Shaders.plist; sourceTree = "<group>"; };
+		DF048B2319E3CCD500064E81 /* VideoFilters.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = VideoFilters.plist; sourceTree = "<group>"; };
+		DF048B2519E3F4CE00064E81 /* Sobel.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; name = Sobel.metal; path = Shaders/Sobel.metal; sourceTree = "<group>"; };
+		DF58E3F61A47EBF900020B1C /* FilterBuffer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FilterBuffer.swift; sourceTree = "<group>"; };
+		DF6A114F19C8091C00D20618 /* Base.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; name = Base.metal; path = Shaders/Base.metal; sourceTree = "<group>"; };
+		DF6A115319C8109F00D20618 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		DF6A115519C810B000D20618 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
+		DF847FD71A11B48900AD6068 /* AccessibleVideo.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = AccessibleVideo.entitlements; sourceTree = "<group>"; };
+		DF847FD81A11FE9A00AD6068 /* Canny.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; name = Canny.metal; path = Shaders/Canny.metal; sourceTree = "<group>"; };
+		DF9C84691A4EB68A009C962B /* ColorBuffer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ColorBuffer.swift; sourceTree = "<group>"; };
+		DF9C846B1A4F5C50009C962B /* BufferTypes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BufferTypes.swift; sourceTree = "<group>"; };
+		DF9C846E1A4F66CE009C962B /* BlurBuffer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlurBuffer.swift; sourceTree = "<group>"; };
+		DFAF7A0919FFFC1800ED5B76 /* AccessibleVideo-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AccessibleVideo-Bridging-Header.h"; sourceTree = "<group>"; };
+		DFAF7A0A19FFFC1800ED5B76 /* MBProgressHUD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MBProgressHUD.h; path = MBProgressHUD/MBProgressHUD.h; sourceTree = "<group>"; };
+		DFAF7A0B19FFFC1800ED5B76 /* MBProgressHUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MBProgressHUD.m; path = MBProgressHUD/MBProgressHUD.m; sourceTree = "<group>"; };
+		DFC4CFEA1A3A1ACE00964650 /* Colorblind.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; name = Colorblind.metal; path = Shaders/Colorblind.metal; sourceTree = "<group>"; };
+		DFC4CFEC1A3A1B6D00964650 /* Common.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; name = Common.metal; path = Shaders/Common.metal; sourceTree = "<group>"; };
+		DFD2200519C643BC00913975 /* AccessibleVideo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AccessibleVideo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DFD2200919C643BC00913975 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		DFD2200A19C643BC00913975 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		DFD2200C19C643BC00913975 /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
+		DFD2200F19C643BC00913975 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		DFD2201119C643BC00913975 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		DFD2201419C643BC00913975 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
+		DFD2202A19C6462800913975 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		DFD2202C19C6478D00913975 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		DFE69F2E19E0EE140072EFAC /* CameraController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraController.swift; sourceTree = "<group>"; };
+		DFE69F3019E0EE870072EFAC /* FilterRenderer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FilterRenderer.swift; sourceTree = "<group>"; };
+		DFF6E1191A104E36009A3CD8 /* SettingsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
+		DFF6E11D1A10796D009A3CD8 /* Blur.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; name = Blur.metal; path = Shaders/Blur.metal; sourceTree = "<group>"; };
+		DFF905131A3936B100501BF0 /* ColorFilters.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = ColorFilters.plist; sourceTree = "<group>"; };
+		DFFEE88E19E207B700D19FFA /* MetalView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MetalView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		DFD2200219C643BC00913975 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DF6A115619C810B000D20618 /* CoreVideo.framework in Frameworks */,
+				DF6A115419C8109F00D20618 /* AVFoundation.framework in Frameworks */,
+				DFD2202D19C6478D00913975 /* QuartzCore.framework in Frameworks */,
+				DFD2202B19C6462800913975 /* Metal.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		DF6A115119C8092600D20618 /* Shaders */ = {
+			isa = PBXGroup;
+			children = (
+				DF6A114F19C8091C00D20618 /* Base.metal */,
+				DF048B2119E3CC9000064E81 /* Shaders.plist */,
+				DF048B2519E3F4CE00064E81 /* Sobel.metal */,
+				DFF6E11D1A10796D009A3CD8 /* Blur.metal */,
+				DF847FD81A11FE9A00AD6068 /* Canny.metal */,
+				DFC4CFEA1A3A1ACE00964650 /* Colorblind.metal */,
+				DFC4CFEC1A3A1B6D00964650 /* Common.metal */,
+			);
+			name = Shaders;
+			sourceTree = "<group>";
+		};
+		DF6A115219C8108E00D20618 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				DF6A115519C810B000D20618 /* CoreVideo.framework */,
+				DF6A115319C8109F00D20618 /* AVFoundation.framework */,
+				DFD2202C19C6478D00913975 /* QuartzCore.framework */,
+				DFD2202A19C6462800913975 /* Metal.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		DF9C846D1A4F634E009C962B /* Metal Renderer */ = {
+			isa = PBXGroup;
+			children = (
+				DF9C846E1A4F66CE009C962B /* BlurBuffer.swift */,
+				DF9C846B1A4F5C50009C962B /* BufferTypes.swift */,
+				DF9C84691A4EB68A009C962B /* ColorBuffer.swift */,
+				DF58E3F61A47EBF900020B1C /* FilterBuffer.swift */,
+				DFE69F3019E0EE870072EFAC /* FilterRenderer.swift */,
+			);
+			name = "Metal Renderer";
+			sourceTree = "<group>";
+		};
+		DFAF7A0819FFFC0900ED5B76 /* MBProgressHUD */ = {
+			isa = PBXGroup;
+			children = (
+				DFAF7A0A19FFFC1800ED5B76 /* MBProgressHUD.h */,
+				DFAF7A0B19FFFC1800ED5B76 /* MBProgressHUD.m */,
+				DFAF7A0919FFFC1800ED5B76 /* AccessibleVideo-Bridging-Header.h */,
+			);
+			name = MBProgressHUD;
+			sourceTree = "<group>";
+		};
+		DFD21FFC19C643BC00913975 = {
+			isa = PBXGroup;
+			children = (
+				DFAF7A0819FFFC0900ED5B76 /* MBProgressHUD */,
+				DF6A115219C8108E00D20618 /* Frameworks */,
+				DFD2200719C643BC00913975 /* AccessibleVideo */,
+				DFD2200619C643BC00913975 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		DFD2200619C643BC00913975 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				DFD2200519C643BC00913975 /* AccessibleVideo.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		DFD2200719C643BC00913975 /* AccessibleVideo */ = {
+			isa = PBXGroup;
+			children = (
+				DFD2200A19C643BC00913975 /* AppDelegate.swift */,
+				DFE69F2E19E0EE140072EFAC /* CameraController.swift */,
+				DFF905131A3936B100501BF0 /* ColorFilters.plist */,
+				DFD2200E19C643BC00913975 /* Main.storyboard */,
+				DFD2200C19C643BC00913975 /* MainViewController.swift */,
+				DF9C846D1A4F634E009C962B /* Metal Renderer */,
+				DFFEE88E19E207B700D19FFA /* MetalView.swift */,
+				DFF6E1191A104E36009A3CD8 /* SettingsViewController.swift */,
+				DF6A115119C8092600D20618 /* Shaders */,
+				DFD2200819C643BC00913975 /* Supporting Files */,
+				DF048B2319E3CCD500064E81 /* VideoFilters.plist */,
+			);
+			path = AccessibleVideo;
+			sourceTree = "<group>";
+		};
+		DFD2200819C643BC00913975 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				DFD2201119C643BC00913975 /* Images.xcassets */,
+				DF847FD71A11B48900AD6068 /* AccessibleVideo.entitlements */,
+				DFD2201319C643BC00913975 /* LaunchScreen.xib */,
+				DFD2200919C643BC00913975 /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		DFD2200419C643BC00913975 /* AccessibleVideo */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DFD2202419C643BC00913975 /* Build configuration list for PBXNativeTarget "AccessibleVideo" */;
+			buildPhases = (
+				DFD2200119C643BC00913975 /* Sources */,
+				DFD2200219C643BC00913975 /* Frameworks */,
+				DFD2200319C643BC00913975 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AccessibleVideo;
+			productName = AccessibleVideo;
+			productReference = DFD2200519C643BC00913975 /* AccessibleVideo.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		DFD21FFD19C643BC00913975 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0600;
+				ORGANIZATIONNAME = "Luke Groeninger";
+				TargetAttributes = {
+					DFD2200419C643BC00913975 = {
+						CreatedOnToolsVersion = 6.0;
+						DevelopmentTeam = G8X4XMPVS9;
+						SystemCapabilities = {
+							com.apple.iCloud = {
+								enabled = 1;
+							};
+						};
+					};
+				};
+			};
+			buildConfigurationList = DFD2200019C643BC00913975 /* Build configuration list for PBXProject "AccessibleVideo" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = DFD21FFC19C643BC00913975;
+			productRefGroup = DFD2200619C643BC00913975 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				DFD2200419C643BC00913975 /* AccessibleVideo */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		DFD2200319C643BC00913975 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DFF905141A3936B100501BF0 /* ColorFilters.plist in Resources */,
+				DFD2201019C643BC00913975 /* Main.storyboard in Resources */,
+				DF048B2419E3CCD500064E81 /* VideoFilters.plist in Resources */,
+				DF048B2219E3CC9000064E81 /* Shaders.plist in Resources */,
+				DFD2201519C643BC00913975 /* LaunchScreen.xib in Resources */,
+				DFD2201219C643BC00913975 /* Images.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		DFD2200119C643BC00913975 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DFFEE88F19E207B700D19FFA /* MetalView.swift in Sources */,
+				DFF6E11E1A10796D009A3CD8 /* Blur.metal in Sources */,
+				DFE69F2F19E0EE140072EFAC /* CameraController.swift in Sources */,
+				DF6A115019C8091C00D20618 /* Base.metal in Sources */,
+				DF048B2619E3F4CE00064E81 /* Sobel.metal in Sources */,
+				DF58E3F71A47EBF900020B1C /* FilterBuffer.swift in Sources */,
+				DF9C846A1A4EB68A009C962B /* ColorBuffer.swift in Sources */,
+				DFC4CFEB1A3A1ACE00964650 /* Colorblind.metal in Sources */,
+				DFD2200D19C643BC00913975 /* MainViewController.swift in Sources */,
+				DF9C846F1A4F66CE009C962B /* BlurBuffer.swift in Sources */,
+				DFE69F3119E0EE870072EFAC /* FilterRenderer.swift in Sources */,
+				DFD2200B19C643BC00913975 /* AppDelegate.swift in Sources */,
+				DF9C846C1A4F5C50009C962B /* BufferTypes.swift in Sources */,
+				DF847FD91A11FE9A00AD6068 /* Canny.metal in Sources */,
+				DFC4CFED1A3A1B6D00964650 /* Common.metal in Sources */,
+				DFAF7A0C19FFFC1800ED5B76 /* MBProgressHUD.m in Sources */,
+				DFF6E11A1A104E36009A3CD8 /* SettingsViewController.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		DFD2200E19C643BC00913975 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				DFD2200F19C643BC00913975 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		DFD2201319C643BC00913975 /* LaunchScreen.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				DFD2201419C643BC00913975 /* Base */,
+			);
+			name = LaunchScreen.xib;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		DFD2202219C643BC00913975 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		DFD2202319C643BC00913975 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		DFD2202519C643BC00913975 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = AccessibleVideo/AccessibleVideo.entitlements;
+				INFOPLIST_FILE = AccessibleVideo/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				OTHER_SWIFT_FLAGS = "";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "AccessibleVideo-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		DFD2202619C643BC00913975 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = AccessibleVideo/AccessibleVideo.entitlements;
+				INFOPLIST_FILE = AccessibleVideo/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				OTHER_SWIFT_FLAGS = "";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "AccessibleVideo-Bridging-Header.h";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		DFD2200019C643BC00913975 /* Build configuration list for PBXProject "AccessibleVideo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DFD2202219C643BC00913975 /* Debug */,
+				DFD2202319C643BC00913975 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DFD2202419C643BC00913975 /* Build configuration list for PBXNativeTarget "AccessibleVideo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DFD2202519C643BC00913975 /* Debug */,
+				DFD2202619C643BC00913975 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = DFD21FFD19C643BC00913975 /* Project object */;
+}

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<array>
+	<dict>
+		<key>Name</key>
+		<string>Full Color</string>
+		<key>Shader</key>
+		<string>yuv_rgb</string>
+		<key>Convolution</key>
+		<array>
+			<real>1</real>
+			<integer>0</integer>
+			<real>1.57481</real>
+			<real>1</real>
+			<real>-0.18732</real>
+			<real>-0.46813</real>
+			<real>1</real>
+			<real>1.8556</real>
+			<real>0</real>
+		</array>
+	</dict>
+	<dict>
+		<key>Name</key>
+		<string>Grayscale</string>
+		<key>Shader</key>
+		<string>yuv_grayscale</string>
+	</dict>
+	<dict>
+		<key>Name</key>
+		<string>Simulated Protanopia</string>
+		<key>Shader</key>
+		<string>yuv_rgb</string>
+		<key>Convolution</key>
+		<array>
+			<real>1</real>
+			<real>-0.538011</real>
+			<real>-0.148487</real>
+			<real>0.99</real>
+			<real>-0.0737588</real>
+			<real>-0.117853</real>
+			<real>1</real>
+			<real>1.85747</real>
+			<real>0.0204294</real>
+		</array>
+	</dict>
+	<dict>
+		<key>Name</key>
+		<string>Simulated Deuteranopia</string>
+		<key>Shader</key>
+		<string>yuv_rgb</string>
+		<key>Convolution</key>
+		<array>
+			<real>1</real>
+			<real>-0.41321</real>
+			<real>0.340115</real>
+			<real>1</real>
+			<real>0.0602316</real>
+			<real>0.268601</real>
+			<real>1.01</real>
+			<real>1.84998</real>
+			<real>-0.0455401</real>
+		</array>
+	</dict>
+	<dict>
+		<key>Name</key>
+		<string>Simulated Tritanopia</string>
+		<key>Shader</key>
+		<string>yuv_rgb</string>
+		<key>Convolution</key>
+		<array>
+			<real>1</real>
+			<real>-0.169053</real>
+			<real>1.47607</real>
+			<real>1</real>
+			<real>0.143294</real>
+			<real>-0.35237</real>
+			<real>1</real>
+			<real>0.169166</real>
+			<real>-0.506443</real>
+		</array>
+	</dict>
+</array>
+</plist>
