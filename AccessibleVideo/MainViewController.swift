@@ -585,11 +585,9 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         _currentColorFilter = newFilter
         let shaderName = (_colorFilters?[newFilter]["Shader"] as? String) ?? "yuv_rgb"
         var convolution = [Float32]()
-        if let param = _colorFilters?[newFilter]["Convolution"] as? [NSNumber] {
-            if param.count == 9 {
-                for i in 0...8 {
-                    convolution.append(Float32(param[i].floatValue))
-                }
+        if let param = _colorFilters?[newFilter]["Convolution"] as? [NSNumber] where param.count == 9 {
+            for i in 0...8 {
+                convolution.append(Float32(param[i].floatValue))
             }
         }
         
@@ -624,11 +622,9 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         set {
             if let videoFilter = _videoFilters {
                 for i in 0..<videoFilter.count {
-                    if let name = videoFilter[i]["Name"] as? String {
-                        if name == newValue {
-                            setVideoFilterIndex(i)
-                            return;
-                        }
+                    if let name = videoFilter[i]["Name"] as? String where name == newValue{
+                        setVideoFilterIndex(i)
+                        return;
                     }
                 }
             }
@@ -643,11 +639,9 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         set {
             if let colorFilters = _colorFilters {
                 for i in 0..<colorFilters.count {
-                    if let name = colorFilters[i]["Name"] as? String {
-                        if name == newValue {
-                            setColorFilterIndex(i)
-                            return;
-                        }
+                    if let name = colorFilters[i]["Name"] as? String where name == newValue {
+                        setColorFilterIndex(i)
+                        return;
                     }
                 }
             }
