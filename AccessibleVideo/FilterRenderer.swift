@@ -283,37 +283,31 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
     
     // create a pipeline state descriptor for a vertex/fragment shader combo
     func pipelineStateFor(#label:String!, fragmentShader:String!, vertexShader: String?) -> (MTLRenderPipelineState?, MTLRenderPipelineReflection?) {
-        if let fragmentProgram = _shaderLibrary.newFunctionWithName(fragmentShader) {
+        if let fragmentProgram = _shaderLibrary.newFunctionWithName(fragmentShader), let vertexProgram = _shaderLibrary.newFunctionWithName(vertexShader ?? "defaultVertex") {
+            let pipelineStateDescriptor = MTLRenderPipelineDescriptor()
+            pipelineStateDescriptor.label = label
+            pipelineStateDescriptor.vertexFunction = vertexProgram
+            pipelineStateDescriptor.fragmentFunction = fragmentProgram
             
-            var name:String = vertexShader ?? "defaultVertex"
+            pipelineStateDescriptor.colorAttachments[0].pixelFormat = .BGRA8Unorm
             
-            if let vertexProgram = _shaderLibrary.newFunctionWithName(name) {
-                
-                let pipelineStateDescriptor = MTLRenderPipelineDescriptor()
-                pipelineStateDescriptor.label = label
-                pipelineStateDescriptor.vertexFunction = vertexProgram
-                pipelineStateDescriptor.fragmentFunction = fragmentProgram
-                
-                pipelineStateDescriptor.colorAttachments[0].pixelFormat = .BGRA8Unorm
-                
-                pipelineStateDescriptor.vertexDescriptor = _vertexDesc
-
-                // create the actual pipeline state
-                var pipelineError : NSError?
-                var info:MTLRenderPipelineReflection? = nil
-                
-                if var pipelineState = _device.newRenderPipelineStateWithDescriptor(pipelineStateDescriptor, options: .BufferTypeInfo, reflection: &info, error: &pipelineError) {
-                    return (pipelineState, info)
-                }
-                
-                println("Failed to create pipeline state for shaders \(vertexShader):\(fragmentShader) error \(pipelineError)")
+            pipelineStateDescriptor.vertexDescriptor = _vertexDesc
+            
+            // create the actual pipeline state
+            var pipelineError : NSError?
+            var info:MTLRenderPipelineReflection? = nil
+            
+            if var pipelineState = _device.newRenderPipelineStateWithDescriptor(pipelineStateDescriptor, options: .BufferTypeInfo, reflection: &info, error: &pipelineError) {
+                return (pipelineState, info)
             }
+            
+            println("Failed to create pipeline state for shaders \(vertexShader):\(fragmentShader) error \(pipelineError)")
         }
         return (nil, nil)
     }
     
     func cachedPipelineStateFor(shaderName:String) -> MTLRenderPipelineState? {
-        var pipeline:MTLRenderPipelineState? = nil
+        let pipeline:MTLRenderPipelineState?
         if let shader = _shaderPipelineStates[shaderName] {
             pipeline = shader
         } else {
@@ -327,15 +321,10 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
                 }
             }
             
-           let (state, reflector) =
-                pipelineStateFor(label:shaderName, fragmentShader: fragment, vertexShader: vertex)
-            if state != nil {
-                    _shaderPipelineStates[shaderName] = state
-                    pipeline = state
-            }
-            if reflector != nil {
-                    _shaderArguments[shaderName] = reflector
-            }
+            let (state, reflector) = pipelineStateFor(label:shaderName, fragmentShader: fragment, vertexShader: vertex)
+            _shaderPipelineStates[shaderName] = state
+            pipeline = state
+            _shaderArguments[shaderName] = reflector
         }
         return pipeline
     }
@@ -349,7 +338,7 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
         viewport:MTLViewport?) {
             if let renderEncoder = commandBuffer.renderCommandEncoderWithDescriptor(descriptor) {
                 
-                var name:String = pipeline.label ?? "Unnamed Render Pass"
+                let name:String = pipeline.label ?? "Unnamed Render Pass"
                 renderEncoder.pushDebugGroup(name)
                 renderEncoder.label = name
                 if let view = viewport {
@@ -380,93 +369,86 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
         if _rgbTexture == nil {
             return
         }
+        let currentOrientation:UIInterfaceOrientation = _isiPad ? UIApplication.sharedApplication().statusBarOrientation : .Portrait
         
-        if let screenDescriptor = view.renderPassDescriptor {
+        if let screenDescriptor = view.renderPassDescriptor, currentBuffer = _vertexBuffers[currentOrientation] {
             
             dispatch_semaphore_wait(_renderSemaphore, DISPATCH_TIME_FOREVER)
-        
+            
             
             // get the command buffer
             let commandBuffer = _commandQueue.commandBuffer()
             commandBuffer.enqueue()
             
-            // if the device is upside down, use the inverted quad
-            let currentOrientation:UIInterfaceOrientation = _isiPad ? UIApplication.sharedApplication().statusBarOrientation : .Portrait
-            if let currentBuffer = _vertexBuffers[currentOrientation] {
-                
+            
+            
+            var sourceTexture:MTLTexture = _rgbTexture
+            var destDescriptor:MTLRenderPassDescriptor = _intermediateRenderPassDescriptor[_currentDestTexture]
+            
+            func swapTextures() {
+                _currentSourceTexture++
+                sourceTexture = _intermediateTextures[_currentSourceTexture]
+                destDescriptor = _intermediateRenderPassDescriptor[_currentDestTexture]
+            }
+            
+            var blurTex = _rgbTexture
+            let passthroughParameters:[(MTLBuffer,Int)] = [_passthroughBuffer]
 
-                
-                var sourceTexture:MTLTexture = _rgbTexture
-                var destDescriptor:MTLRenderPassDescriptor = _intermediateRenderPassDescriptor[_currentDestTexture]
-
-                func swapTextures() {
-                    _currentSourceTexture++
-                    sourceTexture = _intermediateTextures[_currentSourceTexture]
-                    destDescriptor = _intermediateRenderPassDescriptor[_currentDestTexture]
-                }
-                
-                var blurTex = _rgbTexture
-                
-                if applyBlur && _currentVideoFilterUsesBlur {
-                    var parameters = [(MTLBuffer,Int)]()
-                    if let buffer = _blurArgs {
-                        parameters.append(buffer.bufferAndOffsetForElement(_currentBlurBuffer))
-                    }
-                    
-                    createRenderPass(commandBuffer,
-                        pipeline:  _blurPipelineStates[0],
-                        vertexBuffers:[_passthroughBuffer],
-                        fragmentBuffers: parameters,
-                        sourceTextures: [_rgbTexture],
-                        descriptor: _intermediateRenderPassDescriptor[0],
-                        viewport: nil)
-                    
-                    createRenderPass(commandBuffer,
-                        pipeline:  _blurPipelineStates[1],
-                        vertexBuffers:[_passthroughBuffer],
-                        fragmentBuffers: parameters,
-                        sourceTextures: [_intermediateTextures[0]],
-                        descriptor: _blurDescriptor,
-                        viewport: nil)
-                    blurTex = _blurTexture
-                }
-                
-                
-                // apply all render passes in the current filter
-                let filterParameters = _filterArgs.bufferAndOffsetForElement(_currentFilterBuffer)
-                for i in 0..<_currentVideoFilter.count {
-                    createRenderPass(commandBuffer,
-                        pipeline: _currentVideoFilter[i],
-                        vertexBuffers:[_passthroughBuffer],
-                        fragmentBuffers: [filterParameters],
-                        sourceTextures: [sourceTexture, blurTex, _rgbTexture],
-                        descriptor: destDescriptor,
-                        viewport: nil)
-                    
-                    swapTextures()
-                }
-                
+            if applyBlur && _currentVideoFilterUsesBlur {
+                let parameters = [_blurArgs!.bufferAndOffsetForElement(_currentBlurBuffer)]
+                createRenderPass(commandBuffer,
+                    pipeline:  _blurPipelineStates[0],
+                    vertexBuffers: passthroughParameters,
+                    fragmentBuffers: parameters,
+                    sourceTextures: [_rgbTexture],
+                    descriptor: _intermediateRenderPassDescriptor[0],
+                    viewport: nil)
                 
                 createRenderPass(commandBuffer,
-                    pipeline: invertScreen ? _screenInvertState! : _screenBlitState!,
-                    vertexBuffers:[currentBuffer],
-                    fragmentBuffers: [filterParameters],
+                    pipeline:  _blurPipelineStates[1],
+                    vertexBuffers: passthroughParameters,
+                    fragmentBuffers: parameters,
+                    sourceTextures: [_intermediateTextures[0]],
+                    descriptor: _blurDescriptor,
+                    viewport: nil)
+                blurTex = _blurTexture
+            }
+            
+            
+            // apply all render passes in the current filter
+            let filterParameters = [_filterArgs.bufferAndOffsetForElement(_currentFilterBuffer)]
+            for i in 0..<_currentVideoFilter.count {
+                createRenderPass(commandBuffer,
+                    pipeline: _currentVideoFilter[i],
+                    vertexBuffers: passthroughParameters,
+                    fragmentBuffers: filterParameters,
                     sourceTextures: [sourceTexture, blurTex, _rgbTexture],
-                    descriptor: screenDescriptor,
-                    viewport: self._viewport)
+                    descriptor: destDescriptor,
+                    viewport: nil)
                 
                 swapTextures()
-                
-                // commit buffers to GPU
-                commandBuffer.addCompletedHandler( {
-                    (cmdb:MTLCommandBuffer!) in
-                    dispatch_semaphore_signal(self._renderSemaphore)
-                    return
-                    }
-                )
-                commandBuffer.presentDrawable(view.currentDrawable!)
-                commandBuffer.commit()
             }
+            
+            
+            createRenderPass(commandBuffer,
+                pipeline: invertScreen ? _screenInvertState! : _screenBlitState!,
+                vertexBuffers:[currentBuffer],
+                fragmentBuffers: filterParameters,
+                sourceTextures: [sourceTexture, blurTex, _rgbTexture],
+                descriptor: screenDescriptor,
+                viewport: self._viewport)
+            
+            swapTextures()
+            
+            // commit buffers to GPU
+            commandBuffer.addCompletedHandler( {
+                (cmdb:MTLCommandBuffer!) in
+                dispatch_semaphore_signal(self._renderSemaphore)
+                return
+                }
+            )
+            commandBuffer.presentDrawable(view.currentDrawable!)
+            commandBuffer.commit()
         }
     }
     
