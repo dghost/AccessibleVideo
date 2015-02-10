@@ -9,9 +9,9 @@
 
 
 class MetalBuffer {
-    var buffer:MTLBuffer? = nil
-    internal var _filterBufferData:UnsafePointer<Void> = nil
-    internal var _filterBufferSize:Int = 0
+    let buffer:MTLBuffer?
+    internal let _filterBufferData:UnsafePointer<Void>
+    internal let _filterBufferSize:Int
     
     init!(arguments:MTLArgument) {
         let size = arguments.bufferDataSize
@@ -23,15 +23,22 @@ class MetalBuffer {
             _filterBufferSize = size
             setContents(arguments)
         } else {
+            buffer = nil
+            _filterBufferData = nil
+            _filterBufferSize = 0
             return nil
         }
     }
     
     required init!(base:UnsafePointer<Void>, size:Int) {
         if base != nil {
+            buffer = nil
             _filterBufferData = base
             _filterBufferSize = size
         } else {
+            buffer = nil
+            _filterBufferData = nil
+            _filterBufferSize = 0
             return nil
         }
     }
@@ -42,11 +49,10 @@ class MetalBuffer {
 }
 
 class MetalBufferArray<T:MetalBuffer> {
-    var buffer:MTLBuffer? = nil
-    internal var _filterBufferData:UnsafePointer<Void> = nil
-    internal var _filterBufferSize:Int = 0
+    let buffer:MTLBuffer?
+    internal let _filterBufferData:UnsafePointer<Void>
+    internal let _filterBufferSize:Int
     lazy internal var _members = [T]()
-    internal var _count:Int = 0
     
     init!(arguments:MTLArgument, count:Int){
         let size = arguments.bufferDataSize
@@ -56,7 +62,6 @@ class MetalBufferArray<T:MetalBuffer> {
             buffer = b
             _filterBufferData = UnsafePointer<Void>(b.contents())
             _filterBufferSize = size
-            _count=count
             for i in 0..<count {
                 if let element = (T.self as T.Type)(base: _filterBufferData + size * i, size: size) {
                     element.setContents(arguments)
@@ -64,36 +69,39 @@ class MetalBufferArray<T:MetalBuffer> {
                 }
             }
         } else {
+            buffer = nil
+            _filterBufferData = nil
+            _filterBufferSize = 0
             return nil
         }
     }
     
     subscript (element:Int) -> T {
         get {
-            assert(element >= 0 && element < _count, "Index out of range")
+            assert(element >= 0 && element < _members.count , "Index out of range")
             return _members[element]
         }
     }
 
     func bufferAndOffsetForElement(element:Int) -> (MTLBuffer, Int){
-        assert(element >= 0 && element < _count, "Index out of range")
+        assert(element >= 0 && element < _members.count , "Index out of range")
         return (buffer!,_filterBufferSize * element)
     }
     
     func offsetForElement(element:Int) -> Int {
-        assert(element >= 0 && element < _count, "Index out of range")
+        assert(element >= 0 && element < _members.count , "Index out of range")
         return _filterBufferSize * element
     }
     
     var count:Int {
-        return _count
+        return _members.count
     }
 }
 
 // type takes in a UIColor or CGFloats and writes them out as an
 // 8-bit per channel RGBA vector
 struct Color {
-    private var _base:UnsafeMutablePointer<UInt8> = nil
+    private let _base:UnsafeMutablePointer<UInt8>
     init(buffer:UnsafeMutablePointer<UInt8>) {
         _base = buffer
     }
@@ -146,7 +154,7 @@ struct Color {
 // it is a column-major matrix where each column is aligned on
 // 4 byte boundaries
 struct Matrix3x3 {
-    private var _base:UnsafeMutablePointer<Float32> = nil
+    private let _base:UnsafeMutablePointer<Float32>
     init(buffer:UnsafeMutablePointer<Float32>) {
         _base = buffer
     }
