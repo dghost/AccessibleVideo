@@ -584,11 +584,11 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
     func setColorFilterIndex(newFilter:Int) {
         _currentColorFilter = newFilter
         let shaderName = (_colorFilters?[newFilter]["Shader"] as? String) ?? "yuv_rgb"
-        var convolution = [Float32]()
+        let convolution:[Float32]
         if let param = _colorFilters?[newFilter]["Convolution"] as? [NSNumber] where param.count == 9 {
-            for i in 0...8 {
-                convolution.append(Float32(param[i].floatValue))
-            }
+            convolution = param.map({Float32($0.floatValue)})
+        } else {
+            return
         }
         
         renderer.setColorFilter(shaderName, convolution: convolution)

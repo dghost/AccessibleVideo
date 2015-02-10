@@ -225,41 +225,32 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
         _screenBlitState = cachedPipelineStateFor("blit")
         _screenInvertState = cachedPipelineStateFor("invert")
 
-        var fragmentArgs = _shaderArguments["blit"]!.fragmentArguments as! [MTLArgument]
-        for arg in fragmentArgs {
-            if arg.name == "filterParameters" {
-                _filterArgs = MetalBufferArray<FilterBuffer>(arguments: arg, count: _numberShaderBuffers)
-            }
+        var fragmentArgs = (_shaderArguments["blit"]!.fragmentArguments as! [MTLArgument]).filter({$0.name == "filterParameters"})
+        if fragmentArgs.count == 1 {
+            _filterArgs = MetalBufferArray<FilterBuffer>(arguments: fragmentArgs[0], count: _numberShaderBuffers)
         }
     
-        fragmentArgs = _shaderArguments["yuv_rgb"]!.fragmentArguments as! [MTLArgument]
-        for arg in fragmentArgs {
-            if arg.name == "colorParameters" {
-                _colorArgs = MetalBufferArray<ColorBuffer>(arguments: arg, count: _numberShaderBuffers)
-            }
+        fragmentArgs = (_shaderArguments["yuv_rgb"]!.fragmentArguments as! [MTLArgument]).filter({$0.name == "colorParameters"})
+        if fragmentArgs.count == 1 {
+            _colorArgs = MetalBufferArray<ColorBuffer>(arguments: fragmentArgs[0], count: _numberShaderBuffers)
         }
-        
         
         if _device.supportsFeatureSet(._iOS_GPUFamily2_v1) {
             println("Using high quality blur...")
             highQuality = true
             _blurPipelineStates.append(cachedPipelineStateFor("BlurX_HQ")!)
             _blurPipelineStates.append(cachedPipelineStateFor("BlurY_HQ")!)
-            let fragmentArgs = _shaderArguments["BlurX_HQ"]!.fragmentArguments as! [MTLArgument]
-            for arg in fragmentArgs {
-                if arg.name == "blurParameters" {
-                    _blurArgs = MetalBufferArray<BlurBuffer>(arguments: arg, count: _numberShaderBuffers)
-                }
+            let fragmentArgs = (_shaderArguments["BlurX_HQ"]!.fragmentArguments as! [MTLArgument]).filter({$0.name == "blurParameters"})
+            if fragmentArgs.count == 1 {
+                _blurArgs = MetalBufferArray<BlurBuffer>(arguments: fragmentArgs[0], count: _numberShaderBuffers)
             }
         } else {
             highQuality = false
             _blurPipelineStates.append(cachedPipelineStateFor("BlurX")!)
             _blurPipelineStates.append(cachedPipelineStateFor("BlurY")!)
-            let fragmentArgs = _shaderArguments["BlurX"]!.fragmentArguments as! [MTLArgument]
-            for arg in fragmentArgs {
-                if arg.name == "blurParameters" {
-                    _blurArgs = MetalBufferArray<BlurBuffer>(arguments: arg, count: _numberShaderBuffers)
-                }
+            let fragmentArgs = (_shaderArguments["BlurX"]!.fragmentArguments as! [MTLArgument]).filter({$0.name == "blurParameters"})
+            if fragmentArgs.count == 1 {
+                _blurArgs = MetalBufferArray<BlurBuffer>(arguments: fragmentArgs[0], count: _numberShaderBuffers)
             }
         }
         
@@ -490,13 +481,7 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
     func setVideoFilter(filterPasses:[String], usesBlur:Bool = true) {
         _currentVideoFilter.removeAll(keepCapacity: true)
         println("Setting filter...")
-        for i in 0..<filterPasses.count {
-            let shaderName = filterPasses[i]
-            if let shader = cachedPipelineStateFor(shaderName) {
-                println("Adding pass: \(shaderName)")
-                _currentVideoFilter.append(shader)
-            }
-        }
+        _currentVideoFilter.extend(filterPasses.map({self.cachedPipelineStateFor($0)!}))
         _currentVideoFilterUsesBlur = usesBlur
     }
     
