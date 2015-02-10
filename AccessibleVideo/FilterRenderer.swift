@@ -190,7 +190,7 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
         // create default shader library
         _shaderLibrary = _device.newDefaultLibrary()!
         println("Loading shader library...")
-        for str in _shaderLibrary.functionNames as [String] {
+        for str in _shaderLibrary.functionNames as! [String] {
             println("Found shader: \(str)")
         }
         
@@ -225,14 +225,14 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
         _screenBlitState = cachedPipelineStateFor("blit")
         _screenInvertState = cachedPipelineStateFor("invert")
 
-        var fragmentArgs = _shaderArguments["blit"]!.fragmentArguments as [MTLArgument]
+        var fragmentArgs = _shaderArguments["blit"]!.fragmentArguments as! [MTLArgument]
         for arg in fragmentArgs {
             if arg.name == "filterParameters" {
                 _filterArgs = MetalBufferArray<FilterBuffer>(arguments: arg, count: _numberShaderBuffers)
             }
         }
     
-        fragmentArgs = _shaderArguments["yuv_rgb"]!.fragmentArguments as [MTLArgument]
+        fragmentArgs = _shaderArguments["yuv_rgb"]!.fragmentArguments as! [MTLArgument]
         for arg in fragmentArgs {
             if arg.name == "colorParameters" {
                 _colorArgs = MetalBufferArray<ColorBuffer>(arguments: arg, count: _numberShaderBuffers)
@@ -245,7 +245,7 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
             highQuality = true
             _blurPipelineStates.append(cachedPipelineStateFor("BlurX_HQ")!)
             _blurPipelineStates.append(cachedPipelineStateFor("BlurY_HQ")!)
-            let fragmentArgs = _shaderArguments["BlurX_HQ"]!.fragmentArguments as [MTLArgument]
+            let fragmentArgs = _shaderArguments["BlurX_HQ"]!.fragmentArguments as! [MTLArgument]
             for arg in fragmentArgs {
                 if arg.name == "blurParameters" {
                     _blurArgs = MetalBufferArray<BlurBuffer>(arguments: arg, count: _numberShaderBuffers)
@@ -255,7 +255,7 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
             highQuality = false
             _blurPipelineStates.append(cachedPipelineStateFor("BlurX")!)
             _blurPipelineStates.append(cachedPipelineStateFor("BlurY")!)
-            let fragmentArgs = _shaderArguments["BlurX"]!.fragmentArguments as [MTLArgument]
+            let fragmentArgs = _shaderArguments["BlurX"]!.fragmentArguments as! [MTLArgument]
             for arg in fragmentArgs {
                 if arg.name == "blurParameters" {
                     _blurArgs = MetalBufferArray<BlurBuffer>(arguments: arg, count: _numberShaderBuffers)

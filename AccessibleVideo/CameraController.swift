@@ -130,14 +130,14 @@ class CameraController:NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
                 
                 var bestFormat: AVCaptureDeviceFormat! = nil
                 
-                for format:AVCaptureDeviceFormat in _captureDevice!.formats as [AVCaptureDeviceFormat] {
+                for format:AVCaptureDeviceFormat in _captureDevice!.formats as! [AVCaptureDeviceFormat] {
                     let resolution = CMVideoFormatDescriptionGetDimensions(format.formatDescription)
                     let formatCode = str4(Int(CMFormatDescriptionGetMediaSubType(format.formatDescription)))
                     if formatCode != _preferredFormat {
                         continue
                     }
                     
-                    for range:AVFrameRateRange in format.videoSupportedFrameRateRanges as [AVFrameRateRange] {
+                    for range:AVFrameRateRange in format.videoSupportedFrameRateRanges as! [AVFrameRateRange] {
                         if (range.maxFrameRate >= Float64(_preferredFrameRate))
                         {
                             _supportedFormats?.append(format)
@@ -242,7 +242,7 @@ class CameraController:NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     func setupCamera() {
         // initialize AVCaptureSession
 
-        for device in (AVCaptureDevice.devices() as [AVCaptureDevice]) {
+        for device in (AVCaptureDevice.devices() as! [AVCaptureDevice]) {
             if (device.hasMediaType(AVMediaTypeVideo)) {
                 
                 var position:String = "Unknown"
@@ -256,7 +256,7 @@ class CameraController:NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
                 println("Device found: \(position)")
                 println("...supports torch: \(device.torchAvailable)")
 
-                for format:AVCaptureDeviceFormat in device.formats as [AVCaptureDeviceFormat] {
+                for format:AVCaptureDeviceFormat in device.formats as! [AVCaptureDeviceFormat] {
                     let resolution = CMVideoFormatDescriptionGetDimensions(format.formatDescription)
                     
                     let formatCode = str4(Int(CMFormatDescriptionGetMediaSubType(format.formatDescription)))
@@ -264,7 +264,7 @@ class CameraController:NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
                         continue
                     }
                     
-                    for range:AVFrameRateRange in format.videoSupportedFrameRateRanges as [AVFrameRateRange] {
+                    for range:AVFrameRateRange in format.videoSupportedFrameRateRanges as! [AVFrameRateRange] {
                         if (range.maxFrameRate >= Float64(_preferredFrameRate))
                         {
                             _captureDevices[device.position] = device
@@ -309,7 +309,7 @@ class CameraController:NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     var supportedResolutions:[CGSize?] {
         get {
             var result = [CGSize?]()
-            for format:AVCaptureDeviceFormat in _captureDevice!.formats as [AVCaptureDeviceFormat] {
+            for format:AVCaptureDeviceFormat in _captureDevice!.formats as! [AVCaptureDeviceFormat] {
                 let resolution = CMVideoFormatDescriptionGetDimensions(format.formatDescription)
                 let formatCode = str4(Int(CMFormatDescriptionGetMediaSubType(format.formatDescription)))
                 if formatCode != "420v" {
@@ -317,7 +317,7 @@ class CameraController:NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
                 }
                 
                 println("Found format \(formatCode) with resolution \(resolution.width)x\(resolution.height)")
-                for range:AVFrameRateRange in format.videoSupportedFrameRateRanges as [AVFrameRateRange] {
+                for range:AVFrameRateRange in format.videoSupportedFrameRateRanges as! [AVFrameRateRange] {
                     println("...supports up to \(range.maxFrameRate)fps video")
                     if (range.maxFrameRate >= 60.0)
                     {
