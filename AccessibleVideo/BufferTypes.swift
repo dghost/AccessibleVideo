@@ -30,11 +30,12 @@ class MetalBuffer {
         }
     }
     
-    required init!(base:UnsafePointer<Void>, size:Int) {
+    required init!(base:UnsafePointer<Void>, size:Int, arguments:MTLArgument) {
         if base != nil {
             buffer = nil
             _filterBufferData = base
             _filterBufferSize = size
+            setContents(arguments)
         } else {
             buffer = nil
             _filterBufferData = nil
@@ -62,11 +63,8 @@ class MetalBufferArray<T:MetalBuffer> {
             buffer = b
             _filterBufferData = UnsafePointer<Void>(b.contents())
             _filterBufferSize = size
-            for i in 0..<count {
-                if let element = (T.self as T.Type)(base: _filterBufferData + size * i, size: size) {
-                    element.setContents(arguments)
-                    _members.append(element)
-                }
+            _members = (0..<count).map {
+                (T.self as T.Type)(base: self._filterBufferData + size * $0, size: size, arguments: arguments)!
             }
         } else {
             buffer = nil
@@ -206,18 +204,14 @@ struct Matrix3x3 {
     }
     
     func clear() {
-        for column in 0...2 {
-            for row in 0...2 {
-                _base[(column * 4) + row] = 0.0
-            }
+        for index in 0...15 {
+            _base[index] = 0.0
         }
     }
     
     func clearIdentity() {
-        for column in 0...2 {
-            for row in 0...2 {
-                _base[(column * 4) + row] = (column == row) ? 1.0 : 0.0
-            }
+        for index in 0...15 {
+            _base[index] = (index % 4 == 0) ? 1.0 : 0.0
         }
     }
 }
