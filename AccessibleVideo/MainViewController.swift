@@ -433,8 +433,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         // read in the updates
         if let keys:NSArray = notification.userInfo?[NSUbiquitousKeyValueStoreChangedKeysKey] as? NSArray {
             println("Processing updates...")
-            for obj in keys {
-                let key = obj as! String
+            for key in keys as! [String] {
                 println("Received update for \(key)")
                 switch key {
                 case "lock":
@@ -621,8 +620,8 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         }
         set {
             if let videoFilter = _videoFilters {
-                for i in 0..<videoFilter.count {
-                    if let name = videoFilter[i]["Name"] as? String where name == newValue{
+                for (i, filter) in enumerate(videoFilter) {
+                    if let name = filter["Name"] as? String where name == newValue{
                         setVideoFilterIndex(i)
                         return;
                     }
@@ -638,8 +637,8 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         }
         set {
             if let colorFilters = _colorFilters {
-                for i in 0..<colorFilters.count {
-                    if let name = colorFilters[i]["Name"] as? String where name == newValue {
+                for (i, filter) in enumerate(colorFilters) {
+                    if let name = filter["Name"] as? String where name == newValue {
                         setColorFilterIndex(i)
                         return;
                     }

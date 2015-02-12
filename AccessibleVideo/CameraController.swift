@@ -49,10 +49,7 @@ class CameraController:NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     
     var torchMode:Bool {
         get {
-            if let device = _captureDevice {
-                return device.torchMode == .On ? true : false
-            }
-            return false
+            return (_captureDevice?.torchMode ?? .Off) == .On ? true : false
         }
         set {
             if _captureDevice?.torchAvailable ?? false {
@@ -68,11 +65,7 @@ class CameraController:NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
             return _preferredDevicePosition == .Front
         }
         set {
-            if newValue == true {
-                _preferredDevicePosition = .Front
-            } else {
-                _preferredDevicePosition = .Back
-            }
+            _preferredDevicePosition = newValue ? .Front : .Back
         }
     }
     
