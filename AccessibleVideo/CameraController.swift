@@ -122,167 +122,134 @@ class CameraController:NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     }
     
     func setDevice(devicePosition:AVCaptureDevicePosition) -> Bool {
-        if _captureDevice?.position != devicePosition {
-            // Loop through all the capture devices on this phone
-            if let device = _captureDevices[devicePosition] {
-                _captureDevice = device
-                _supportedFormats = [AVCaptureDeviceFormat]()
+        // Loop through all the capture devices on this phone
+        if let device = _captureDevices[devicePosition] where _captureDevice?.position != devicePosition  {
+            _captureDevice = device
+            
+            var bestFormat: AVCaptureDeviceFormat! = nil
+            
+            let formats = (device.formats as! [AVCaptureDeviceFormat]).filter {
+                let formatCode = str4(Int(CMFormatDescriptionGetMediaSubType($0.formatDescription)))
+                let resolution = CMVideoFormatDescriptionGetDimensions($0.formatDescription)
+                let ranges = ($0.videoSupportedFrameRateRanges as! [AVFrameRateRange]).filter {
+                    $0.maxFrameRate >= Float64(self._preferredFrameRate)
+                }
+                return (formatCode == self._preferredFormat
+                    && Int32(self._preferredResolution.width) <= resolution.width
+                    && Int32(self._preferredResolution.height) <= resolution.height
+                    && ranges.count > 0)
+            }
+            
+            _supportedFormats = formats
+            
+           for format in formats {
+                _currentFormat = format
+                _captureDevice?.lockForConfiguration(nil)
+                _captureDevice?.activeFormat = format
+                // cap the framerate to the max set above
+                _captureDevice?.activeVideoMaxFrameDuration = CMTimeMake(1, _preferredFrameRate)
+                _captureDevice?.activeVideoMinFrameDuration = CMTimeMake(1, _preferredFrameRate)
+                //            _captureDevice?.activeVideoMaxFrameDuration = bestFrameRate.minFrameDuration
+                //            _captureDevice?.activeVideoMinFrameDuration = bestFrameRate.minFrameDuration
+                _captureDevice?.unlockForConfiguration()
                 
-                var bestFormat: AVCaptureDeviceFormat! = nil
+                if self.running {
+                    _captureSession.stopRunning()
+                }
                 
-                for format:AVCaptureDeviceFormat in _captureDevice!.formats as! [AVCaptureDeviceFormat] {
+                _captureSession.beginConfiguration()
+                
+                if let connection = _captureConnection {
+                    _captureSession.removeConnection(connection)
+                }
+                if let input = _captureInput {
+                    _captureSession.removeInput(input)
+                }
+                
+                var error: NSError?
+                _captureInput = AVCaptureDeviceInput(device: device, error: &error)
+                if (error != nil) {
+                    println("Failed to create AVCaptureDeviceInput, error \(error)")
+                }
+                _captureConnection = AVCaptureConnection(inputPorts: _captureInput!.ports, output: _captureOutput! as AVCaptureOutput)
+                
+                println("Supports video orientation: \(_captureConnection!.supportsVideoOrientation)")
+                
+                if devicePosition == .Front {
+                    _captureConnection!.videoOrientation = .LandscapeRight
+                    _captureConnection!.automaticallyAdjustsVideoMirroring = false
+                    _captureConnection!.videoMirrored = true
+                }
+                
+                println("Video mirrored: \(_captureConnection!.videoMirrored)")
+                
+                _captureSession.addInputWithNoConnections(_captureInput)
+                _captureSession.addConnection(_captureConnection)
+                _captureSession.commitConfiguration()
+                
+                dispatch_async(_cameraQueue) {
                     let resolution = CMVideoFormatDescriptionGetDimensions(format.formatDescription)
-                    let formatCode = str4(Int(CMFormatDescriptionGetMediaSubType(format.formatDescription)))
-                    if formatCode != _preferredFormat {
-                        continue
-                    }
-                    
-                    for range:AVFrameRateRange in format.videoSupportedFrameRateRanges as! [AVFrameRateRange] {
-                        if (range.maxFrameRate >= Float64(_preferredFrameRate))
-                        {
-                            _supportedFormats?.append(format)
-                            if (_preferredResolution.width > 0 && _preferredResolution.height > 0) {
-                                if Int32(_preferredResolution.width) != resolution.width || Int32(_preferredResolution.height) != resolution.height {
-                                    continue
-                                }
-                            }
-                            bestFormat = format
-                            // force 60fps cap - this keeps it in sync with the screen
-                        }
-                    }
+                    self.delegate?.setResolution(width: Int(resolution.width), height: Int(resolution.height))
                 }
                 
-                if bestFormat != nil {
-                    _currentFormat = bestFormat
-                    _captureDevice?.lockForConfiguration(nil)
-                    _captureDevice?.activeFormat = bestFormat
-                    // cap the framerate to the max set above
-                    _captureDevice?.activeVideoMaxFrameDuration = CMTimeMake(1, _preferredFrameRate)
-                    _captureDevice?.activeVideoMinFrameDuration = CMTimeMake(1, _preferredFrameRate)
-                    //            _captureDevice?.activeVideoMaxFrameDuration = bestFrameRate.minFrameDuration
-                    //            _captureDevice?.activeVideoMinFrameDuration = bestFrameRate.minFrameDuration
-                    _captureDevice?.unlockForConfiguration()
+                
+                if self.running {
+                    _captureSession.startRunning()
                 }
                 
-                if let device:AVCaptureDevice! = _captureDevice {
-                    if self.running {
-                        _captureSession.stopRunning()
-                    }
-
-                    _captureSession.beginConfiguration()
-
-                    if let connection:AVCaptureConnection! = _captureConnection {
-                        _captureSession.removeConnection(connection)
-                    }
-                    if let input:AVCaptureInput! = _captureInput {
-                        _captureSession.removeInput(input)
-                    }
-                    
-                    var error: NSError?
-                    _captureInput = AVCaptureDeviceInput(device: device, error: &error)
-                    if (error != nil) {
-                        println("Failed to create AVCaptureDeviceInput, error \(error)")
-                    }
-                    _captureConnection = AVCaptureConnection(inputPorts: _captureInput!.ports, output: _captureOutput! as AVCaptureOutput)
-                    
-                    println("Supports video orientation: \(_captureConnection!.supportsVideoOrientation)")
-
-
-                    
-                    if devicePosition == .Front {
-                        _captureConnection!.videoOrientation = .LandscapeRight
-                        _captureConnection!.automaticallyAdjustsVideoMirroring = false
-                        _captureConnection!.videoMirrored = true
-                    }
-                    
-                    var temp = ""
-                    
-                    switch (_captureConnection!.videoOrientation) {
-                    case .Portrait:
-                        temp = "Portrait"
-                        break;
-                    case .PortraitUpsideDown:
-                        temp = "PortraitUpsideDown"
-                        break;
-                    case .LandscapeLeft:
-                        temp = "LandscapeLeft"
-                        break;
-                    case .LandscapeRight:
-                        temp = "LandscapeRight"
-                        break;
-                    }
-                    
-                    println(temp)
-                    
-                    println("Video mirrored: \(_captureConnection!.videoMirrored)")
-
-                    
-                    _captureSession.addInputWithNoConnections(_captureInput)
-                    _captureSession.addConnection(_captureConnection)
-                    _captureSession.commitConfiguration()
-
-                    if let format = _currentFormat {
-                        dispatch_async(_cameraQueue) {
-                            let resolution = CMVideoFormatDescriptionGetDimensions(format.formatDescription)
-                            self.delegate?.setResolution(width: Int(resolution.width), height: Int(resolution.height))
-                        }
-                    }
-                    
-                    if self.running {
-                        _captureSession.startRunning()
-                    }
-                    
-                    return true
-                }
+                return true
             }
         }
         return false
     }
     
+    
     func setupCamera() {
         // initialize AVCaptureSession
-
-        for device in (AVCaptureDevice.devices() as! [AVCaptureDevice]) {
-            if (device.hasMediaType(AVMediaTypeVideo)) {
-                
-                var position:String = "Unknown"
-                
-                if device.position == .Front {
-                    position = "Front Camera"
-                } else if device.position == .Back {
-                    position = "Rear Camera"
-                }
-                
-                println("Device found: \(position)")
-                println("...supports torch: \(device.torchAvailable)")
-
-                for format:AVCaptureDeviceFormat in device.formats as! [AVCaptureDeviceFormat] {
-                    let resolution = CMVideoFormatDescriptionGetDimensions(format.formatDescription)
-                    
-                    let formatCode = str4(Int(CMFormatDescriptionGetMediaSubType(format.formatDescription)))
-                    if formatCode != _preferredFormat {
-                        continue
-                    }
-                    
-                    for range:AVFrameRateRange in format.videoSupportedFrameRateRanges as! [AVFrameRateRange] {
-                        if (range.maxFrameRate >= Float64(_preferredFrameRate))
-                        {
-                            _captureDevices[device.position] = device
-                            if device.position == .Front {
-                                _supportsFrontCamera = true
-                            }
-                            
-                            println("Found format \(formatCode) with resolution \(resolution.width)x\(resolution.height)")
-                            println("...supports up to \(range.maxFrameRate)fps video")
-                            println("...supports HDR: \(format.videoHDRSupported)")
-                            println("...supports auto stabilization: \(format.isVideoStabilizationModeSupported(.Auto))")
-                            println("...supports cinematic stabilization: \(format.isVideoStabilizationModeSupported(.Cinematic))")
-                        }
-                    }
-                    
-                }
-
+        
+        let devices = (AVCaptureDevice.devices() as! [AVCaptureDevice]).filter {
+            ($0.position == .Front || $0.position == .Back) && $0.hasMediaType(AVMediaTypeVideo)
+        }
+        
+        for device in devices {
+            var position:String = "Unknown"
+            
+            if device.position == .Front {
+                position = "Front Camera"
+            } else if device.position == .Back {
+                position = "Rear Camera"
             }
+            
+            println("Device found: \(position)")
+            println("...supports torch: \(device.torchAvailable)")
+            
+            let formats = (device.formats as! [AVCaptureDeviceFormat]).filter {
+                let formatCode = str4(Int(CMFormatDescriptionGetMediaSubType($0.formatDescription)))
+                return (formatCode == self._preferredFormat)
+            }
+            
+            for format in formats {
+                let resolution = CMVideoFormatDescriptionGetDimensions(format.formatDescription)
+                
+                let ranges = (format.videoSupportedFrameRateRanges as! [AVFrameRateRange]).filter {
+                    $0.maxFrameRate >= Float64(self._preferredFrameRate)
+                }
+                if ranges.count > 0 {
+                    _captureDevices[device.position] = device
+                    if device.position == .Front {
+                        _supportsFrontCamera = true
+                    }
+                }
+                
+                for range:AVFrameRateRange in ranges {
+                    println("Found format with resolution \(resolution.width)x\(resolution.height)")
+                    println("...supports up to \(range.maxFrameRate)fps video")
+                    println("...supports HDR: \(format.videoHDRSupported)")
+                    println("...supports auto stabilization: \(format.isVideoStabilizationModeSupported(.Auto))")
+                    println("...supports cinematic stabilization: \(format.isVideoStabilizationModeSupported(.Cinematic))")
+                }
+            }
+            
         }
 
         
@@ -308,28 +275,27 @@ class CameraController:NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     
     var supportedResolutions:[CGSize?] {
         get {
-            var result = [CGSize?]()
-            for format:AVCaptureDeviceFormat in _captureDevice!.formats as! [AVCaptureDeviceFormat] {
-                let resolution = CMVideoFormatDescriptionGetDimensions(format.formatDescription)
-                let formatCode = str4(Int(CMFormatDescriptionGetMediaSubType(format.formatDescription)))
-                if formatCode != "420v" {
-                    continue
-                }
-                
-                println("Found format \(formatCode) with resolution \(resolution.width)x\(resolution.height)")
-                for range:AVFrameRateRange in format.videoSupportedFrameRateRanges as! [AVFrameRateRange] {
-                    println("...supports up to \(range.maxFrameRate)fps video")
-                    if (range.maxFrameRate >= 60.0)
-                    {
-                        result.append(CGSizeMake(CGFloat(resolution.width), CGFloat(resolution.height)))
-                    }
-                }
-                println("...supports HDR: \(format.videoHDRSupported)")
-                println("...supports auto stabilization: \(format.isVideoStabilizationModeSupported(.Auto))")
-                println("...supports cinematic stabilization: \(format.isVideoStabilizationModeSupported(.Cinematic))")
-                
+            var formatsAndResolutions = (_captureDevice!.formats as! [AVCaptureDeviceFormat]).map {
+                return ($0, CMVideoFormatDescriptionGetDimensions($0.formatDescription))
             }
-            return result
+            
+            let filtered = formatsAndResolutions.filter {
+                let format = $0.0
+                let resolution = $0.1
+                let formatCode = str4(Int(CMFormatDescriptionGetMediaSubType(format.formatDescription)))
+                let ranges = (format.videoSupportedFrameRateRanges as! [AVFrameRateRange]).filter {
+                    $0.maxFrameRate >= Float64(self._preferredFrameRate)
+                }
+                return (formatCode == self._preferredFormat
+                    && Int32(self._preferredResolution.width) <= resolution.width
+                    && Int32(self._preferredResolution.height) <= resolution.height
+                    && ranges.count > 0)
+            }
+            
+            return filtered.map {
+                let resolution = $0.1
+                return CGSizeMake(CGFloat(resolution.width), CGFloat(resolution.height))
+            }
         }
     }
 }
