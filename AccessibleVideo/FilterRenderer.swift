@@ -360,11 +360,14 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
         if _rgbTexture == nil {
             return
         }
+        
+        dispatch_semaphore_wait(_renderSemaphore, DISPATCH_TIME_FOREVER)
+
         let currentOrientation:UIInterfaceOrientation = _isiPad ? UIApplication.sharedApplication().statusBarOrientation : .Portrait
+
         
         if let screenDescriptor = view.renderPassDescriptor, currentBuffer = _vertexBuffers[currentOrientation] {
             
-            dispatch_semaphore_wait(_renderSemaphore, DISPATCH_TIME_FOREVER)
             
             
             // get the command buffer
@@ -377,9 +380,9 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
             var destDescriptor:MTLRenderPassDescriptor = _intermediateRenderPassDescriptor[_currentDestTexture]
             
             func swapTextures() {
-                _currentSourceTexture++
-                sourceTexture = _intermediateTextures[_currentSourceTexture]
-                destDescriptor = _intermediateRenderPassDescriptor[_currentDestTexture]
+                self._currentSourceTexture++
+                sourceTexture = self._intermediateTextures[self._currentSourceTexture]
+                destDescriptor = self._intermediateRenderPassDescriptor[self._currentDestTexture]
             }
             
             var blurTex = _rgbTexture
