@@ -545,11 +545,7 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
     
     
     func captureBuffer(sampleBuffer: CMSampleBuffer!) {
-        if _rgbTexture == nil {
-            return
-        }
-        
-        if let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) {
+        if _rgbTexture != nil, let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) {
             
             let commandBuffer = _commandQueue.commandBuffer()
             commandBuffer.enqueue()
