@@ -116,7 +116,7 @@ class CameraController:NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     
     func setDevice(devicePosition:AVCaptureDevicePosition) -> Bool {
         // Loop through all the capture devices on this phone
-        if let device = _captureDevices[devicePosition] where device.position != devicePosition  {
+        if let device = _captureDevices[devicePosition] where _captureDevice?.position != devicePosition  {
             _captureDevice = device
             
             var bestFormat: AVCaptureDeviceFormat! = nil
