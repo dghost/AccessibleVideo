@@ -585,9 +585,9 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         let shaderName = (_colorFilters?[newFilter]["Shader"] as? String) ?? "yuv_rgb"
         let convolution:[Float32]
         if let param = _colorFilters?[newFilter]["Convolution"] as? [NSNumber] where param.count == 9 {
-            convolution = param.map({Float32($0.floatValue)})
+            convolution = param.map {Float32($0.floatValue)}
         } else {
-            return
+            convolution = [1.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0]
         }
         
         renderer.setColorFilter(shaderName, convolution: convolution)
