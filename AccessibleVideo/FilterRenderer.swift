@@ -34,9 +34,9 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
     private var _controller:UIViewController! = nil
     
     lazy private var _device = MTLCreateSystemDefaultDevice()
-    private var _vertexBuffers = [UIInterfaceOrientation : (MTLBuffer,Int)]()
+    lazy private var _vertexStart = [UIInterfaceOrientation : Int]()
 
-    private var _passthroughBuffer:(MTLBuffer,Int)! = nil
+    private var _vertexBuffer:MTLBuffer! = nil
     private var _filterArgs:MetalBufferArray<FilterBuffer>! = nil
     private var _colorArgs:MetalBufferArray<ColorBuffer>! = nil
     private var _blurArgs:MetalBufferArray<BlurBuffer>? = nil
@@ -138,45 +138,30 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
         _textureCache = _unmanagedTextureCache!.takeUnretainedValue()
         
         // set up the full screen quads
-        let dataPassthrough:[Float] =
-        [ -1.0,  -1.0,  0.0, 1.0,
+        let data:[Float] =
+        [   // landscape right & passthrough
+            -1.0,  -1.0,  0.0, 1.0,
             1.0,  -1.0,  1.0, 1.0,
             -1.0,   1.0,  0.0, 0.0,
             1.0,  -1.0,  1.0, 1.0,
             -1.0,   1.0,  0.0, 0.0,
-            1.0,   1.0,  1.0, 0.0]
-        
-        // set up vertex buffer
-        var dataSize = dataPassthrough.count * sizeofValue(dataPassthrough[0]) // 1
-        _passthroughBuffer = (_device.newBufferWithBytes(dataPassthrough, length: dataSize, options: nil),0)
-        _vertexBuffers[.LandscapeRight] = _passthroughBuffer
-        
-        let dataLandscapeLeft:[Float] =
-        [ -1.0,  -1.0,  1.0, 0.0,
+            1.0,   1.0,  1.0, 0.0,
+            // landscape left
+            -1.0,  -1.0,  1.0, 0.0,
             1.0,  -1.0,  0.0, 0.0,
             -1.0,   1.0,  1.0, 1.0,
             1.0,  -1.0,  0.0, 0.0,
             -1.0,   1.0,  1.0, 1.0,
-            1.0,   1.0,  0.0, 1.0]
-        
-        // set up vertex buffer
-        dataSize = dataLandscapeLeft.count * sizeofValue(dataLandscapeLeft[0]) // 1
-        _vertexBuffers[.LandscapeLeft] = (_device.newBufferWithBytes(dataLandscapeLeft, length: dataSize, options: nil),0)
-        
-        let dataPortrait:[Float] =
-        [ -1.0,  -1.0,  1.0, 1.0,
+            1.0,   1.0,  0.0, 1.0,
+            // portrait
+            -1.0,  -1.0,  1.0, 1.0,
             1.0,  -1.0,  1.0, 0.0,
             -1.0,   1.0,  0.0, 1.0,
             1.0,  -1.0,  1.0, 0.0,
             -1.0,   1.0,  0.0, 1.0,
-            1.0,   1.0,  0.0, 0.0]
-        
-        // set up vertex buffer
-        dataSize = dataPortrait.count * sizeofValue(dataPortrait[0]) // 1
-        _vertexBuffers[.Portrait] = (_device.newBufferWithBytes(dataPortrait, length: dataSize, options: nil),0)
-        
-        let dataPortraitUpsideDown:[Float] =
-        [ -1.0,  -1.0,  0.0, 0.0,
+            1.0,   1.0,  0.0, 0.0,
+            // portrait upside down
+            -1.0,  -1.0,  0.0, 0.0,
             1.0,  -1.0,  0.0, 1.0,
             -1.0,   1.0,  1.0, 0.0,
             1.0,  -1.0,  0.0, 1.0,
@@ -184,8 +169,14 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
             1.0,   1.0,  1.0, 1.0]
         
         // set up vertex buffer
-        dataSize = dataPortraitUpsideDown.count * sizeofValue(dataPortraitUpsideDown[0]) // 1
-        _vertexBuffers[.PortraitUpsideDown] = (_device.newBufferWithBytes(dataPortraitUpsideDown, length: dataSize, options: nil),0)
+        var dataSize = data.count * sizeofValue(data[0]) // 1
+        _vertexBuffer = _device.newBufferWithBytes(data, length: dataSize, options: nil)
+
+        // set vertex indicies start for each rotation
+        _vertexStart[.LandscapeRight] = 0
+        _vertexStart[.LandscapeLeft] = 6
+        _vertexStart[.Portrait] = 12
+        _vertexStart[.PortraitUpsideDown] = 18
         
         // create default shader library
         _shaderLibrary = _device.newDefaultLibrary()!
@@ -321,7 +312,7 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
     // create generic render pass
     func createRenderPass(commandBuffer: MTLCommandBuffer!,
         pipeline:MTLRenderPipelineState!,
-        vertexBuffers:[(MTLBuffer,Int)], fragmentBuffers:[(MTLBuffer,Int)],
+        vertexIndex:Int, fragmentBuffers:[(MTLBuffer,Int)],
         sourceTextures:[MTLTexture],
         descriptor: MTLRenderPassDescriptor!,
         viewport:MTLViewport?) {
@@ -335,9 +326,8 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
                 }
                 renderEncoder.setRenderPipelineState(pipeline)
                 
-                for (index,(buffer, offset)) in enumerate(vertexBuffers) {
-                    renderEncoder.setVertexBuffer(buffer, offset: offset, atIndex: index)
-                }
+                renderEncoder.setVertexBuffer(_vertexBuffer, offset: 0, atIndex: 0)
+
                 for (index,(buffer, offset)) in enumerate(fragmentBuffers) {
                     renderEncoder.setFragmentBuffer(buffer, offset: offset, atIndex: index)
                 }
@@ -348,7 +338,7 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
                     renderEncoder.setFragmentSamplerState(samplerState, atIndex: index)
                 }
                 
-                renderEncoder.drawPrimitives(.Triangle, vertexStart: 0, vertexCount: 6, instanceCount: 1)
+                renderEncoder.drawPrimitives(.Triangle, vertexStart: vertexIndex, vertexCount: 6, instanceCount: 1)
                 renderEncoder.popDebugGroup()
                 renderEncoder.endEncoding()
                 
@@ -366,7 +356,7 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
         let currentOrientation:UIInterfaceOrientation = _isiPad ? UIApplication.sharedApplication().statusBarOrientation : .Portrait
 
         
-        if let screenDescriptor = view.renderPassDescriptor, currentBuffer = _vertexBuffers[currentOrientation] {
+        if let screenDescriptor = view.renderPassDescriptor, currentOffset = _vertexStart[currentOrientation] {
             
             
             
@@ -386,13 +376,12 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
             }
             
             var blurTex = _rgbTexture
-            let passthroughParameters:[(MTLBuffer,Int)] = [_passthroughBuffer]
 
-            if applyBlur && _currentVideoFilterUsesBlur {
-                let parameters = [_blurArgs!.bufferAndOffsetForElement(_currentBlurBuffer)]
+            if applyBlur && _currentVideoFilterUsesBlur, let args = _blurArgs {
+                let parameters = [args.bufferAndOffsetForElement(_currentBlurBuffer)]
                 createRenderPass(commandBuffer,
                     pipeline:  _blurPipelineStates[0],
-                    vertexBuffers: passthroughParameters,
+                    vertexIndex: 0,
                     fragmentBuffers: parameters,
                     sourceTextures: [_rgbTexture],
                     descriptor: _intermediateRenderPassDescriptor[0],
@@ -400,7 +389,7 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
                 
                 createRenderPass(commandBuffer,
                     pipeline:  _blurPipelineStates[1],
-                    vertexBuffers: passthroughParameters,
+                    vertexIndex: 0,
                     fragmentBuffers: parameters,
                     sourceTextures: [_intermediateTextures[0]],
                     descriptor: _blurDescriptor,
@@ -414,7 +403,7 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
             for (i, filter) in enumerate(_currentVideoFilter) {
                 createRenderPass(commandBuffer,
                     pipeline: filter,
-                    vertexBuffers: passthroughParameters,
+                    vertexIndex: 0,
                     fragmentBuffers: filterParameters,
                     sourceTextures: [sourceTexture, blurTex, _rgbTexture],
                     descriptor: destDescriptor,
@@ -426,7 +415,7 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
             
             createRenderPass(commandBuffer,
                 pipeline: invertScreen ? _screenInvertState! : _screenBlitState!,
-                vertexBuffers:[currentBuffer],
+                vertexIndex: currentOffset,
                 fragmentBuffers: filterParameters,
                 sourceTextures: [sourceTexture, blurTex, _rgbTexture],
                 descriptor: screenDescriptor,
@@ -568,7 +557,7 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
             // create the YUV->RGB pass
             createRenderPass(commandBuffer,
                 pipeline: _currentColorFilter,
-                vertexBuffers: [_passthroughBuffer],
+                vertexIndex: 0,
                 fragmentBuffers: [_colorArgs.bufferAndOffsetForElement(_currentColorBuffer)],
                 sourceTextures: yuvTextures,
                 descriptor: _rgbDescriptor,
