@@ -113,12 +113,26 @@ struct Color {
         }
     }
     
+    var inverseColor:UIColor {
+        get {
+            return UIColor(red: 1.0 - r, green: 1.0 - g, blue: 1.0 - b, alpha: a)
+        }
+        set {
+            var rt:CGFloat = 0.0, gt:CGFloat = 0.0, bt:CGFloat = 0.0
+            newValue.getRed(&rt, green: &gt, blue: &bt, alpha: &self.a)
+            self.r = 1.0 - rt
+            self.g = 1.0 - gt
+            self.b = 1.0 - bt
+        }
+    }
+    
     var r:CGFloat {
         get {
             return CGFloat(Float(_base[0]) / 255.0)
         }
         set {
-            _base[0] = UInt8(newValue * 255.0)
+            let clamped = newValue < 0.0 ? 0.0 : (newValue > 1.0 ? 1.0 : newValue)
+            _base[0] = UInt8(clamped * 255.0)
         }
     }
     var g:CGFloat {
@@ -126,7 +140,8 @@ struct Color {
             return CGFloat(Float(_base[1]) / 255.0)
         }
         set {
-            _base[1] = UInt8(newValue * 255.0)
+            let clamped = newValue < 0.0 ? 0.0 : (newValue > 1.0 ? 1.0 : newValue)
+            _base[1] = UInt8(clamped * 255.0)
         }
     }
     var b:CGFloat {
@@ -134,7 +149,8 @@ struct Color {
             return CGFloat(Float(_base[2]) / 255.0)
         }
         set {
-            _base[2] = UInt8(newValue * 255.0)
+            let clamped = newValue < 0.0 ? 0.0 : (newValue > 1.0 ? 1.0 : newValue)
+            _base[2] = UInt8(clamped * 255.0)
         }
     }
     var a:CGFloat {
@@ -142,7 +158,8 @@ struct Color {
             return CGFloat(Float(_base[3]) / 255.0)
         }
         set {
-            _base[3] = UInt8(newValue * 255.0)
+            let clamped = newValue < 0.0 ? 0.0 : (newValue > 1.0 ? 1.0 : newValue)
+            _base[3] = UInt8(clamped * 255.0)
         }
     }
 }
