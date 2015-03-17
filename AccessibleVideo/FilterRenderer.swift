@@ -635,24 +635,8 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
 
         let currentBuffer = _filterArgs[nextBuffer]
         if invertScreen {
-            var r:CGFloat = 0.0
-            var g:CGFloat = 0.0
-            var b:CGFloat = 0.0
-            var a:CGFloat = 0.0
-            primaryColor.getRed(&r, green: &g, blue: &b, alpha: &a)
-            
-            
-            currentBuffer.primaryColor?.r = CGFloat(1.0 - r)
-            currentBuffer.primaryColor?.g = CGFloat(1.0 - g)
-            currentBuffer.primaryColor?.b = CGFloat(1.0 - b)
-            currentBuffer.primaryColor?.a = a
-            
-            secondaryColor.getRed(&r, green: &g, blue: &b, alpha: &a)
-            
-            currentBuffer.secondaryColor?.r = CGFloat(1.0 - r)
-            currentBuffer.secondaryColor?.g = CGFloat(1.0 - g)
-            currentBuffer.secondaryColor?.b = CGFloat(1.0 - b)
-            currentBuffer.secondaryColor?.a = a
+            currentBuffer.primaryColor?.inverseColor = primaryColor
+            currentBuffer.secondaryColor?.inverseColor = secondaryColor
         } else {
             currentBuffer.primaryColor?.color = primaryColor
             currentBuffer.secondaryColor?.color = secondaryColor
