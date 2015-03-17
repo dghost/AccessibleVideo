@@ -286,8 +286,7 @@ class CameraController:NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
             }
             
             return filtered.map {
-                let resolution = $0.1
-                return CGSizeMake(CGFloat(resolution.width), CGFloat(resolution.height))
+                return CGSizeMake(CGFloat($0.1.width), CGFloat($0.1.height))
             }
         }
     }

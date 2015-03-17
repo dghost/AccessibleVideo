@@ -483,15 +483,15 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
     
     func setVideoFilter(filterPasses:[String], usesBlur:Bool = true) {
         println("Setting filter...")
-        _currentVideoFilter = filterPasses.map({self.cachedPipelineStateFor($0)!})
+        _currentVideoFilter = filterPasses.map {self.cachedPipelineStateFor($0)!}
         _currentVideoFilterUsesBlur = usesBlur
     }
     
     func setColorFilter(shaderName:String, convolution:[Float32]) {
         if let shader = cachedPipelineStateFor(shaderName) {
             _currentColorFilter = shader
+            _currentColorConvolution = convolution
         }
-        _currentColorConvolution = convolution
     }
     
     func setResolution(#width: Int, height: Int) {
@@ -615,12 +615,11 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
         let nextBuffer = (_currentColorBuffer + 1) % _numberShaderBuffers
 
         if _currentColorConvolution.count == 9 {
-            let c = _currentColorConvolution
             _colorArgs[nextBuffer].yuvToRGB?.set(
                 (
-                    (c[0], c[1], c[2]),
-                    (c[3], c[4], c[5]),
-                    (c[6], c[7], c[8])
+                    (_currentColorConvolution[0], _currentColorConvolution[1], _currentColorConvolution[2]),
+                    (_currentColorConvolution[3], _currentColorConvolution[4], _currentColorConvolution[5]),
+                    (_currentColorConvolution[6], _currentColorConvolution[7], _currentColorConvolution[8])
                 )
             )
         } else {
