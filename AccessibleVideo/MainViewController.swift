@@ -475,7 +475,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         MBProgressHUD.hideAllHUDsForView(_hudView, animated: false)
         _hudView.addSubview(_hud)
         _hud.customView = nil
-        _hud.mode = MBProgressHUDModeText
+        _hud.mode = .Text
         _hud.labelText = text
         _hud.show(true)
         _hud.hide(true, afterDelay: 2)
@@ -485,7 +485,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         MBProgressHUD.hideAllHUDsForView(_hudView, animated: false)
         _hudView.addSubview(_hud)
         _hud.customView = imageView
-        _hud.mode = MBProgressHUDModeCustomView
+        _hud.mode = .CustomView
         _hud.labelText = text
         _hud.show(true)
         _hud.hide(true, afterDelay: 2)
