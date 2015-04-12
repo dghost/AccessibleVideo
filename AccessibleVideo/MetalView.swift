@@ -54,7 +54,7 @@ class MetalView:UIView {
     func initCommon() {
         self.opaque = true
         self.backgroundColor = nil
-        _metalLayer = self.layer as CAMetalLayer
+        _metalLayer = self.layer as! CAMetalLayer
         
         _metalLayer.device = _device
         _metalLayer.pixelFormat = .BGRA8Unorm

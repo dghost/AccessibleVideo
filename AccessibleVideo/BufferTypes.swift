@@ -9,9 +9,9 @@
 
 
 class MetalBuffer {
-    var buffer:MTLBuffer? = nil
-    internal var _filterBufferData:UnsafePointer<Void> = nil
-    internal var _filterBufferSize:Int = 0
+    let buffer:MTLBuffer?
+    internal let _filterBufferData:UnsafePointer<Void>
+    internal let _filterBufferSize:Int
     
     init!(arguments:MTLArgument) {
         let size = arguments.bufferDataSize
@@ -23,15 +23,23 @@ class MetalBuffer {
             _filterBufferSize = size
             setContents(arguments)
         } else {
+            buffer = nil
+            _filterBufferData = nil
+            _filterBufferSize = 0
             return nil
         }
     }
     
-    required init!(base:UnsafePointer<Void>, size:Int) {
+    required init!(base:UnsafePointer<Void>, size:Int, arguments:MTLArgument) {
         if base != nil {
+            buffer = nil
             _filterBufferData = base
             _filterBufferSize = size
+            setContents(arguments)
         } else {
+            buffer = nil
+            _filterBufferData = nil
+            _filterBufferSize = 0
             return nil
         }
     }
@@ -42,11 +50,10 @@ class MetalBuffer {
 }
 
 class MetalBufferArray<T:MetalBuffer> {
-    var buffer:MTLBuffer? = nil
-    internal var _filterBufferData:UnsafePointer<Void> = nil
-    internal var _filterBufferSize:Int = 0
+    let buffer:MTLBuffer?
+    internal let _filterBufferData:UnsafePointer<Void>
+    internal let _filterBufferSize:Int
     lazy internal var _members = [T]()
-    internal var _count:Int = 0
     
     init!(arguments:MTLArgument, count:Int){
         let size = arguments.bufferDataSize
@@ -56,44 +63,43 @@ class MetalBufferArray<T:MetalBuffer> {
             buffer = b
             _filterBufferData = UnsafePointer<Void>(b.contents())
             _filterBufferSize = size
-            _count=count
-            for i in 0..<count {
-                if let element = (T.self as T.Type)(base: _filterBufferData + size * i, size: size) {
-                    element.setContents(arguments)
-                    _members.append(element)
-                }
+            _members = (0..<count).map {
+                (T.self as T.Type)(base: self._filterBufferData + size * $0, size: size, arguments: arguments)!
             }
         } else {
+            buffer = nil
+            _filterBufferData = nil
+            _filterBufferSize = 0
             return nil
         }
     }
     
     subscript (element:Int) -> T {
         get {
-            assert(element >= 0 && element < _count, "Index out of range")
+            assert(element >= 0 && element < _members.count , "Index out of range")
             return _members[element]
         }
     }
 
     func bufferAndOffsetForElement(element:Int) -> (MTLBuffer, Int){
-        assert(element >= 0 && element < _count, "Index out of range")
+        assert(element >= 0 && element < _members.count , "Index out of range")
         return (buffer!,_filterBufferSize * element)
     }
     
     func offsetForElement(element:Int) -> Int {
-        assert(element >= 0 && element < _count, "Index out of range")
+        assert(element >= 0 && element < _members.count , "Index out of range")
         return _filterBufferSize * element
     }
     
     var count:Int {
-        return _count
+        return _members.count
     }
 }
 
 // type takes in a UIColor or CGFloats and writes them out as an
 // 8-bit per channel RGBA vector
 struct Color {
-    private var _base:UnsafeMutablePointer<UInt8> = nil
+    private let _base:UnsafeMutablePointer<UInt8>
     init(buffer:UnsafeMutablePointer<UInt8>) {
         _base = buffer
     }
@@ -107,12 +113,26 @@ struct Color {
         }
     }
     
+    var inverseColor:UIColor {
+        get {
+            return UIColor(red: 1.0 - r, green: 1.0 - g, blue: 1.0 - b, alpha: a)
+        }
+        set {
+            var rt:CGFloat = 0.0, gt:CGFloat = 0.0, bt:CGFloat = 0.0
+            newValue.getRed(&rt, green: &gt, blue: &bt, alpha: &self.a)
+            self.r = 1.0 - rt
+            self.g = 1.0 - gt
+            self.b = 1.0 - bt
+        }
+    }
+    
     var r:CGFloat {
         get {
             return CGFloat(Float(_base[0]) / 255.0)
         }
         set {
-            _base[0] = UInt8(newValue * 255.0)
+            let clamped = newValue < 0.0 ? 0.0 : (newValue > 1.0 ? 1.0 : newValue)
+            _base[0] = UInt8(clamped * 255.0)
         }
     }
     var g:CGFloat {
@@ -120,7 +140,8 @@ struct Color {
             return CGFloat(Float(_base[1]) / 255.0)
         }
         set {
-            _base[1] = UInt8(newValue * 255.0)
+            let clamped = newValue < 0.0 ? 0.0 : (newValue > 1.0 ? 1.0 : newValue)
+            _base[1] = UInt8(clamped * 255.0)
         }
     }
     var b:CGFloat {
@@ -128,7 +149,8 @@ struct Color {
             return CGFloat(Float(_base[2]) / 255.0)
         }
         set {
-            _base[2] = UInt8(newValue * 255.0)
+            let clamped = newValue < 0.0 ? 0.0 : (newValue > 1.0 ? 1.0 : newValue)
+            _base[2] = UInt8(clamped * 255.0)
         }
     }
     var a:CGFloat {
@@ -136,7 +158,8 @@ struct Color {
             return CGFloat(Float(_base[3]) / 255.0)
         }
         set {
-            _base[3] = UInt8(newValue * 255.0)
+            let clamped = newValue < 0.0 ? 0.0 : (newValue > 1.0 ? 1.0 : newValue)
+            _base[3] = UInt8(clamped * 255.0)
         }
     }
 }
@@ -146,7 +169,7 @@ struct Color {
 // it is a column-major matrix where each column is aligned on
 // 4 byte boundaries
 struct Matrix3x3 {
-    private var _base:UnsafeMutablePointer<Float32> = nil
+    private let _base:UnsafeMutablePointer<Float32>
     init(buffer:UnsafeMutablePointer<Float32>) {
         _base = buffer
     }
@@ -198,18 +221,14 @@ struct Matrix3x3 {
     }
     
     func clear() {
-        for column in 0...2 {
-            for row in 0...2 {
-                _base[(column * 4) + row] = 0.0
-            }
+        for index in 0...15 {
+            _base[index] = 0.0
         }
     }
     
     func clearIdentity() {
-        for column in 0...2 {
-            for row in 0...2 {
-                _base[(column * 4) + row] = (column == row) ? 1.0 : 0.0
-            }
+        for index in 0...15 {
+            _base[index] = (index % 4 == 0) ? 1.0 : 0.0
         }
     }
 }

@@ -14,7 +14,7 @@ class ColorBuffer:MetalBuffer {
         if arguments.name == "colorParameters" {
             yuvToRGB = nil
             
-            let parameters = arguments.bufferStructType?.members as [MTLStructMember]
+            let parameters = arguments.bufferStructType?.members as! [MTLStructMember]
             for parameter in parameters {
                 println("Found parameter \(parameter.name) at offset \(parameter.offset)")
                 

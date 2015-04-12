@@ -112,7 +112,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         renderer = FilterRenderer(viewController: self)
         
         // cast view as MetalView type
-        renderview = view as MetalView
+        renderview = view as! MetalView
         
         // set up the renderer and set the view delegate
         renderview.delegate = renderer
@@ -248,8 +248,8 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
     
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         if segue.identifier == "settings" || segue.identifier == "settings-hq" {
-            let nav = segue.destinationViewController as UINavigationController
-            let popover = nav.viewControllers.first as SettingsViewController
+            let nav = segue.destinationViewController as! UINavigationController
+            let popover = nav.viewControllers.first as! SettingsViewController
             
             // set the navigation controller to be it's own popover presentation controller delegate
             nav.popoverPresentationController?.delegate = self
@@ -433,8 +433,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         // read in the updates
         if let keys:NSArray = notification.userInfo?[NSUbiquitousKeyValueStoreChangedKeysKey] as? NSArray {
             println("Processing updates...")
-            for obj in keys {
-                let key = obj as String
+            for key in keys as! [String] {
                 println("Received update for \(key)")
                 switch key {
                 case "lock":
@@ -476,7 +475,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         MBProgressHUD.hideAllHUDsForView(_hudView, animated: false)
         _hudView.addSubview(_hud)
         _hud.customView = nil
-        _hud.mode = MBProgressHUDModeText
+        _hud.mode = .Text
         _hud.labelText = text
         _hud.show(true)
         _hud.hide(true, afterDelay: 2)
@@ -486,7 +485,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         MBProgressHUD.hideAllHUDsForView(_hudView, animated: false)
         _hudView.addSubview(_hud)
         _hud.customView = imageView
-        _hud.mode = MBProgressHUDModeCustomView
+        _hud.mode = .CustomView
         _hud.labelText = text
         _hud.show(true)
         _hud.hide(true, afterDelay: 2)
@@ -555,10 +554,10 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
     
     // MARK: Filter Manipulation
     
-    func setVideoFilter(newFilter:Int) {
+    func setVideoFilterIndex(newFilter:Int) {
         _currentVideoFilter = newFilter
-        var passes = _videoFilters?[newFilter]["Passes"] as? [String] ?? ["blit"]
-        var blur = _videoFilters?[newFilter]["CanUseBlur"] as? Bool ?? true
+        let passes = (_videoFilters?[newFilter]["Passes"] as? [String]) ?? ["blit"]
+        let blur = (_videoFilters?[newFilter]["CanUseBlur"] as? Bool) ?? true
         renderer.setVideoFilter(passes, usesBlur: blur)
         showOverlayWithText(videoFilter!, andImageView: _filterImage)
         saveDefaults()
@@ -567,7 +566,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
     func nextVideoFilter() {
         if let vidFilter = _videoFilters {
             let newFilter = (_currentVideoFilter + 1) % vidFilter.count
-            setVideoFilter(newFilter)
+            setVideoFilterIndex(newFilter)
         }
     }
     
@@ -577,20 +576,18 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
             if newFilter < 0 {
                 newFilter += vidFilter.count
             }
-            setVideoFilter(newFilter)
+            setVideoFilterIndex(newFilter)
         }
     }
     
-    func setColorFilter(newFilter:Int) {
+    func setColorFilterIndex(newFilter:Int) {
         _currentColorFilter = newFilter
-        let shaderName = _colorFilters?[newFilter]["Shader"] as? String ?? "yuv_rgb"
-        var convolution = [Float32]()
-        if let param = _colorFilters?[newFilter]["Convolution"] as? [NSNumber] {
-            if param.count == 9 {
-                for i in 0...8 {
-                    convolution.append(Float32(param[i].floatValue))
-                }
-            }
+        let shaderName = (_colorFilters?[newFilter]["Shader"] as? String) ?? "yuv_rgb"
+        let convolution:[Float32]
+        if let param = _colorFilters?[newFilter]["Convolution"] as? [NSNumber] where param.count == 9 {
+            convolution = param.map {Float32($0.floatValue)}
+        } else {
+            convolution = [1.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0]
         }
         
         renderer.setColorFilter(shaderName, convolution: convolution)
@@ -601,7 +598,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
     func nextColorFilter() {
         if let colorFilter = _colorFilters {
             let newFilter = (_currentColorFilter + 1) % colorFilter.count
-            setColorFilter(newFilter)
+            setColorFilterIndex(newFilter)
         }
     }
     
@@ -611,7 +608,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
             if newFilter < 0 {
                 newFilter += colorFilter.count
             }
-            setColorFilter(newFilter)
+            setColorFilterIndex(newFilter)
         }
     }
     
@@ -623,16 +620,14 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         }
         set {
             if let videoFilter = _videoFilters {
-                for i in 0..<videoFilter.count {
-                    if let name = videoFilter[i]["Name"] as? String {
-                        if name == newValue {
-                            setVideoFilter(i)
-                            return;
-                        }
+                for (i, filter) in enumerate(videoFilter) {
+                    if let name = filter["Name"] as? String where name == newValue{
+                        setVideoFilterIndex(i)
+                        return;
                     }
                 }
             }
-            setVideoFilter(0)
+            setVideoFilterIndex(0)
         }
     }
     
@@ -642,16 +637,14 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         }
         set {
             if let colorFilters = _colorFilters {
-                for i in 0..<colorFilters.count {
-                    if let name = colorFilters[i]["Name"] as? String {
-                        if name == newValue {
-                            setColorFilter(i)
-                            return;
-                        }
+                for (i, filter) in enumerate(colorFilters) {
+                    if let name = filter["Name"] as? String where name == newValue {
+                        setColorFilterIndex(i)
+                        return;
                     }
                 }
             }
-            setColorFilter(0)
+            setColorFilterIndex(0)
         }
     }
     
