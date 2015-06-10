@@ -427,41 +427,45 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
     }
     
     func externalUpdate(notification:NSNotification) {
-        // stop observing iCloud updates while we update
-        NSNotificationCenter.defaultCenter().removeObserver(self, name: NSUserDefaultsDidChangeNotification, object:nil)
+        
         
         // read in the updates
-        if let keys:NSArray = notification.userInfo?[NSUbiquitousKeyValueStoreChangedKeysKey] as? NSArray {
-            print("Processing updates...")
-            for key in keys as! [String] {
-                print("Received update for \(key)")
-                switch key {
-                case "lock":
-                    lock = _defaults.boolForKey(key)
-                    break;
-                case "autoHideUI":
-                    autoHideUI = _defaults.boolForKey(key)
-                    break;
-                case "blur":
-                    blur = _defaults.boolForKey(key)
-                    break;
-                case "invert":
-                    invert = _defaults.boolForKey(key)
-                    break;
-                case "useFrontCamera":
-                    if camera.supportsFrontCamera {
-                        frontCamera = _defaults.boolForKey(key)
-                    }
-                case "videoFilter":
-                    videoFilter = _defaults.stringForKey(key)
-                    break;
-                case "colorFilter":
-                    colorFilter = _defaults.stringForKey(key)
-                    break;
-                default:
-                    print("Unrecognized key \(key)")
-                    break;
+        guard let keys:NSArray = notification.userInfo?[NSUbiquitousKeyValueStoreChangedKeysKey] as? NSArray  else {
+            return
+        }
+        
+        // stop observing iCloud updates while we update
+        NSNotificationCenter.defaultCenter().removeObserver(self, name: NSUserDefaultsDidChangeNotification, object:nil)
+  
+        print("Processing updates...")
+        for key in keys as! [String] {
+            print("Received update for \(key)")
+            switch key {
+            case "lock":
+                lock = _defaults.boolForKey(key)
+                break;
+            case "autoHideUI":
+                autoHideUI = _defaults.boolForKey(key)
+                break;
+            case "blur":
+                blur = _defaults.boolForKey(key)
+                break;
+            case "invert":
+                invert = _defaults.boolForKey(key)
+                break;
+            case "useFrontCamera":
+                if camera.supportsFrontCamera {
+                    frontCamera = _defaults.boolForKey(key)
                 }
+            case "videoFilter":
+                videoFilter = _defaults.stringForKey(key)
+                break;
+            case "colorFilter":
+                colorFilter = _defaults.stringForKey(key)
+                break;
+            default:
+                print("Unrecognized key \(key)")
+                break;
             }
         }
         
@@ -564,20 +568,24 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
     }
     
     func nextVideoFilter() {
-        if let vidFilter = _videoFilters {
-            let newFilter = (_currentVideoFilter + 1) % vidFilter.count
-            setVideoFilterIndex(newFilter)
+        guard let vidFilter = _videoFilters  else {
+            return
         }
+        let newFilter = (_currentVideoFilter + 1) % vidFilter.count
+        setVideoFilterIndex(newFilter)
+        
     }
     
     func prevVideoFilter() {
-        if let vidFilter = _videoFilters {
-            var newFilter = (_currentVideoFilter - 1) % vidFilter.count
-            if newFilter < 0 {
-                newFilter += vidFilter.count
-            }
-            setVideoFilterIndex(newFilter)
+        guard let vidFilter = _videoFilters  else {
+            return
         }
+        
+        var newFilter = (_currentVideoFilter - 1) % vidFilter.count
+        if newFilter < 0 {
+            newFilter += vidFilter.count
+        }
+        setVideoFilterIndex(newFilter)
     }
     
     func setColorFilterIndex(newFilter:Int) {

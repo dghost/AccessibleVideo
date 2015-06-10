@@ -119,85 +119,89 @@ class CameraController:NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     
     func setDevice(devicePosition:AVCaptureDevicePosition) -> Bool {
         // Loop through all the capture devices on this phone
-        if let device = _captureDevices[devicePosition] where _captureDevice?.position != devicePosition  {
-            _captureDevice = device
+        guard let device = _captureDevices[devicePosition] where _captureDevice?.position != devicePosition else {
+            return false
             
-            let formats = (device.formats as! [AVCaptureDeviceFormat]).filter {
-                let formatCode = str4(Int(CMFormatDescriptionGetMediaSubType($0.formatDescription)))
-                let resolution = CMVideoFormatDescriptionGetDimensions($0.formatDescription)
-                let ranges = ($0.videoSupportedFrameRateRanges as! [AVFrameRateRange]).filter {
-                    $0.maxFrameRate >= Float64(self._preferredFrameRate)
-                }
-                return (formatCode == self._preferredFormat
-                    && Int32(self._preferredResolution.width) <= resolution.width
-                    && Int32(self._preferredResolution.height) <= resolution.height
-                    && ranges.count > 0)
+        }
+        _captureDevice = device
+        
+        let formats = (device.formats as! [AVCaptureDeviceFormat]).filter {
+            let formatCode = str4(Int(CMFormatDescriptionGetMediaSubType($0.formatDescription)))
+            let resolution = CMVideoFormatDescriptionGetDimensions($0.formatDescription)
+            let ranges = ($0.videoSupportedFrameRateRanges as! [AVFrameRateRange]).filter {
+                $0.maxFrameRate >= Float64(self._preferredFrameRate)
+            }
+            return (formatCode == self._preferredFormat
+                && Int32(self._preferredResolution.width) <= resolution.width
+                && Int32(self._preferredResolution.height) <= resolution.height
+                && ranges.count > 0)
+        }
+        
+        _supportedFormats = formats
+        
+        for format in formats {
+            _currentFormat = format
+            do {
+                try _captureDevice?.lockForConfiguration()
+            } catch _ {
+                return false
+            }
+            _captureDevice?.activeFormat = format
+            // cap the framerate to the max set above
+            _captureDevice?.activeVideoMaxFrameDuration = CMTimeMake(1, _preferredFrameRate)
+            _captureDevice?.activeVideoMinFrameDuration = CMTimeMake(1, _preferredFrameRate)
+            //            _captureDevice?.activeVideoMaxFrameDuration = bestFrameRate.minFrameDuration
+            //            _captureDevice?.activeVideoMinFrameDuration = bestFrameRate.minFrameDuration
+            _captureDevice?.unlockForConfiguration()
+            
+            if self.running {
+                _captureSession.stopRunning()
             }
             
-            _supportedFormats = formats
+            _captureSession.beginConfiguration()
             
-           for format in formats {
-                _currentFormat = format
-                do {
-                    try _captureDevice?.lockForConfiguration()
-                } catch _ {
-                }
-                _captureDevice?.activeFormat = format
-                // cap the framerate to the max set above
-                _captureDevice?.activeVideoMaxFrameDuration = CMTimeMake(1, _preferredFrameRate)
-                _captureDevice?.activeVideoMinFrameDuration = CMTimeMake(1, _preferredFrameRate)
-                //            _captureDevice?.activeVideoMaxFrameDuration = bestFrameRate.minFrameDuration
-                //            _captureDevice?.activeVideoMinFrameDuration = bestFrameRate.minFrameDuration
-                _captureDevice?.unlockForConfiguration()
-                
-                if self.running {
-                    _captureSession.stopRunning()
-                }
-                
-                _captureSession.beginConfiguration()
-                
-                if let connection = _captureConnection {
-                    _captureSession.removeConnection(connection)
-                }
-                if let input = _captureInput {
-                    _captureSession.removeInput(input)
-                }
-                
-                do {
-                    _captureInput = try AVCaptureDeviceInput(device: device)
-                } catch let error as NSError {
-                    _captureInput = nil
-                    print("Failed to create AVCaptureDeviceInput, error \(error)")
-                }
-
-                _captureConnection = AVCaptureConnection(inputPorts: _captureInput!.ports, output: _captureOutput! as AVCaptureOutput)
-                
-                print("Supports video orientation: \(_captureConnection!.supportsVideoOrientation)")
-                
-                if devicePosition == .Front {
-                    _captureConnection!.videoOrientation = .LandscapeRight
-                    _captureConnection!.automaticallyAdjustsVideoMirroring = false
-                    _captureConnection!.videoMirrored = true
-                }
-                
-                print("Video mirrored: \(_captureConnection!.videoMirrored)")
-                
-                _captureSession.addInputWithNoConnections(_captureInput)
-                _captureSession.addConnection(_captureConnection)
-                _captureSession.commitConfiguration()
-                
-                dispatch_async(_cameraQueue) {
-                    let resolution = CMVideoFormatDescriptionGetDimensions(format.formatDescription)
-                    self.delegate?.setResolution(width: Int(resolution.width), height: Int(resolution.height))
-                }
-                
-                
-                if self.running {
-                    _captureSession.startRunning()
-                }
-                
-                return true
+            if let connection = _captureConnection {
+                _captureSession.removeConnection(connection)
             }
+            if let input = _captureInput {
+                _captureSession.removeInput(input)
+            }
+            
+            do {
+                _captureInput = try AVCaptureDeviceInput(device: device)
+            } catch let error as NSError {
+                _captureInput = nil
+                print("Failed to create AVCaptureDeviceInput, error \(error)")
+                return false
+            }
+            
+            _captureConnection = AVCaptureConnection(inputPorts: _captureInput!.ports, output: _captureOutput! as AVCaptureOutput)
+            
+            print("Supports video orientation: \(_captureConnection!.supportsVideoOrientation)")
+            
+            if devicePosition == .Front {
+                _captureConnection!.videoOrientation = .LandscapeRight
+                _captureConnection!.automaticallyAdjustsVideoMirroring = false
+                _captureConnection!.videoMirrored = true
+            }
+            
+            print("Video mirrored: \(_captureConnection!.videoMirrored)")
+            
+            _captureSession.addInputWithNoConnections(_captureInput)
+            _captureSession.addConnection(_captureConnection)
+            _captureSession.commitConfiguration()
+            
+            dispatch_async(_cameraQueue) {
+                let resolution = CMVideoFormatDescriptionGetDimensions(format.formatDescription)
+                self.delegate?.setResolution(width: Int(resolution.width), height: Int(resolution.height))
+            }
+            
+            
+            if self.running {
+                _captureSession.startRunning()
+            }
+            
+            return true
         }
         return false
     }
