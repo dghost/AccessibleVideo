@@ -44,7 +44,7 @@ class MetalView:UIView {
     private weak var _metalLayer:CAMetalLayer! = nil
     private var _currentDrawable:CAMetalDrawable? = nil
     private var _renderPassDescriptor:MTLRenderPassDescriptor? = nil
-    lazy private var _device:MTLDevice = MTLCreateSystemDefaultDevice()
+    lazy private var _device:MTLDevice = MTLCreateSystemDefaultDevice()!
 
     
     override class func layerClass() -> AnyClass {

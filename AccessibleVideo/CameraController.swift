@@ -12,7 +12,7 @@ import CoreVideo
 
 
 protocol CameraCaptureDelegate {
-    func setResolution(#width: Int, height: Int)
+    func setResolution(width width: Int, height: Int)
     func captureBuffer(sampleBuffer:CMSampleBuffer!)
 }
 
@@ -53,7 +53,10 @@ class CameraController:NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
         }
         set {
             if _captureDevice?.torchAvailable ?? false {
-                _captureDevice?.lockForConfiguration(nil)
+                do {
+                    try _captureDevice?.lockForConfiguration()
+                } catch _ {
+                }
                 _captureDevice?.torchMode = newValue ? .On : .Off
                 _captureDevice?.unlockForConfiguration()
             }
@@ -100,9 +103,9 @@ class CameraController:NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
         didSet {
             dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0)) {
                 if self.setDevice(self._preferredDevicePosition) {
-                    println("Successfully set device position")
+                    print("Successfully set device position")
                 } else {
-                    println("Error setting device position")
+                    print("Error setting device position")
                 }
             }
         }
@@ -118,8 +121,6 @@ class CameraController:NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
         // Loop through all the capture devices on this phone
         if let device = _captureDevices[devicePosition] where _captureDevice?.position != devicePosition  {
             _captureDevice = device
-            
-            var bestFormat: AVCaptureDeviceFormat! = nil
             
             let formats = (device.formats as! [AVCaptureDeviceFormat]).filter {
                 let formatCode = str4(Int(CMFormatDescriptionGetMediaSubType($0.formatDescription)))
@@ -137,7 +138,10 @@ class CameraController:NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
             
            for format in formats {
                 _currentFormat = format
-                _captureDevice?.lockForConfiguration(nil)
+                do {
+                    try _captureDevice?.lockForConfiguration()
+                } catch _ {
+                }
                 _captureDevice?.activeFormat = format
                 // cap the framerate to the max set above
                 _captureDevice?.activeVideoMaxFrameDuration = CMTimeMake(1, _preferredFrameRate)
@@ -159,14 +163,16 @@ class CameraController:NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
                     _captureSession.removeInput(input)
                 }
                 
-                var error: NSError?
-                _captureInput = AVCaptureDeviceInput(device: device, error: &error)
-                if (error != nil) {
-                    println("Failed to create AVCaptureDeviceInput, error \(error)")
+                do {
+                    _captureInput = try AVCaptureDeviceInput(device: device)
+                } catch let error as NSError {
+                    _captureInput = nil
+                    print("Failed to create AVCaptureDeviceInput, error \(error)")
                 }
+
                 _captureConnection = AVCaptureConnection(inputPorts: _captureInput!.ports, output: _captureOutput! as AVCaptureOutput)
                 
-                println("Supports video orientation: \(_captureConnection!.supportsVideoOrientation)")
+                print("Supports video orientation: \(_captureConnection!.supportsVideoOrientation)")
                 
                 if devicePosition == .Front {
                     _captureConnection!.videoOrientation = .LandscapeRight
@@ -174,7 +180,7 @@ class CameraController:NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
                     _captureConnection!.videoMirrored = true
                 }
                 
-                println("Video mirrored: \(_captureConnection!.videoMirrored)")
+                print("Video mirrored: \(_captureConnection!.videoMirrored)")
                 
                 _captureSession.addInputWithNoConnections(_captureInput)
                 _captureSession.addConnection(_captureConnection)
@@ -213,8 +219,8 @@ class CameraController:NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
                 position = "Rear Camera"
             }
             
-            println("Device found: \(position)")
-            println("...supports torch: \(device.torchAvailable)")
+            print("Device found: \(position)")
+            print("...supports torch: \(device.torchAvailable)")
             
             let formats = (device.formats as! [AVCaptureDeviceFormat]).filter {
                 let formatCode = str4(Int(CMFormatDescriptionGetMediaSubType($0.formatDescription)))
@@ -235,11 +241,11 @@ class CameraController:NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
                 }
                 
                 for range:AVFrameRateRange in ranges {
-                    println("Found format with resolution \(resolution.width)x\(resolution.height)")
-                    println("...supports up to \(range.maxFrameRate)fps video")
-                    println("...supports HDR: \(format.videoHDRSupported)")
-                    println("...supports auto stabilization: \(format.isVideoStabilizationModeSupported(.Auto))")
-                    println("...supports cinematic stabilization: \(format.isVideoStabilizationModeSupported(.Cinematic))")
+                    print("Found format with resolution \(resolution.width)x\(resolution.height)")
+                    print("...supports up to \(range.maxFrameRate)fps video")
+                    print("...supports HDR: \(format.videoHDRSupported)")
+                    print("...supports auto stabilization: \(format.isVideoStabilizationModeSupported(.Auto))")
+                    print("...supports cinematic stabilization: \(format.isVideoStabilizationModeSupported(.Cinematic))")
                 }
             }
             
@@ -250,7 +256,7 @@ class CameraController:NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
         _captureOutput = AVCaptureVideoDataOutput()
         _captureOutput?.alwaysDiscardsLateVideoFrames = true
         
-        let vidSettings = [kCVPixelBufferPixelFormatTypeKey as NSString:kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange]
+        let vidSettings = [kCVPixelBufferPixelFormatTypeKey as NSObject:NSNumber(unsignedInt:kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange) ]
         _captureOutput?.videoSettings = vidSettings
         
         _captureOutput?.setSampleBufferDelegate(self, queue: _cameraQueue)
@@ -268,7 +274,7 @@ class CameraController:NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     
     var supportedResolutions:[CGSize?] {
         get {
-            var formatsAndResolutions = (_captureDevice!.formats as! [AVCaptureDeviceFormat]).map {
+            let formatsAndResolutions = (_captureDevice!.formats as! [AVCaptureDeviceFormat]).map {
                 return ($0, CMVideoFormatDescriptionGetDimensions($0.formatDescription))
             }
             

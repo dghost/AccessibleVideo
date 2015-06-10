@@ -17,9 +17,9 @@ class FilterBuffer:MetalBuffer {
             _lowThreshold = nil
             _highThreshold = nil
             
-            let parameters = arguments.bufferStructType?.members as! [MTLStructMember]
+            let parameters = arguments.bufferStructType.members as [MTLStructMember]
             for parameter in parameters {
-                println("Found parameter \(parameter.name) at offset \(parameter.offset)")
+                print("Found parameter \(parameter.name) at offset \(parameter.offset)")
                 
                 switch(parameter.name) {
                 case "primaryColor":
@@ -39,7 +39,7 @@ class FilterBuffer:MetalBuffer {
                     _highThreshold = pointer
                     break;
                 default:
-                    println("Error: unknown parameter")
+                    print("Error: unknown parameter")
                     break;
                 }
             }

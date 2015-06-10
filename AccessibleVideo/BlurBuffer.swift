@@ -17,9 +17,9 @@ class BlurBuffer:MetalBuffer {
             _x = nil
             _y = nil
             
-            let parameters = arguments.bufferStructType?.members as! [MTLStructMember]
+            let parameters = arguments.bufferStructType.members as [MTLStructMember]
             for parameter in parameters {
-                println("Found parameter \(parameter.name) at offset \(parameter.offset)")
+                print("Found parameter \(parameter.name) at offset \(parameter.offset)")
                 
                 switch(parameter.name) {
                 case "xOffsets":
@@ -31,7 +31,7 @@ class BlurBuffer:MetalBuffer {
                     _y = pointer
                     break;
                 default:
-                    println("Error: unknown parameter")
+                    print("Error: unknown parameter")
                     break;
                 }
             }

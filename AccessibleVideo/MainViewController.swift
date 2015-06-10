@@ -38,8 +38,8 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
     
     var renderview: MetalView! = nil
     
-    lazy private var _videoFilters = NSArray(contentsOfFile: NSBundle.mainBundle().pathForResource("VideoFilters", ofType: "plist")!)
-    lazy private var _colorFilters = NSArray(contentsOfFile: NSBundle.mainBundle().pathForResource("ColorFilters", ofType: "plist")!)
+    private var _videoFilters = NSArray(contentsOfFile: NSBundle.mainBundle().pathForResource("VideoFilters", ofType: "plist")!)
+    private var _colorFilters = NSArray(contentsOfFile: NSBundle.mainBundle().pathForResource("ColorFilters", ofType: "plist")!)
 
     var _swipeActions = Dictionary<UInt, () -> ()> ()
     
@@ -49,10 +49,10 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
     
     lazy private var _hud: MBProgressHUD! = MBProgressHUD()
     
-    lazy private var _lockedImage = UIImageView(image: UIImage(named: "Lock"))
-    lazy private var _unlockedImage = UIImageView(image: UIImage(named: "Unlock"))
-    lazy private var _filterImage = UIImageView(image: UIImage(named: "VideoFilter"))
-    lazy private var _colorImage = UIImageView(image: UIImage(named: "ColorFilter"))
+    private var _lockedImage = UIImageView(image: UIImage(named: "Lock"))
+    private var _unlockedImage = UIImageView(image: UIImage(named: "Unlock"))
+    private var _filterImage = UIImageView(image: UIImage(named: "VideoFilter"))
+    private var _colorImage = UIImageView(image: UIImage(named: "ColorFilter"))
     
     lazy private var _defaults = NSUbiquitousKeyValueStore.defaultStore()
     private var _defaultsTimer:NSTimer? = nil
@@ -232,7 +232,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
     
     func gestureRecognizer(gestureRecognizer: UIGestureRecognizer, shouldReceiveTouch touch: UITouch) -> Bool {
 
-        if touch.view.superview == _switchView || touch.view.superview == _settingsView {
+        if touch.view!.superview == _switchView || touch.view!.superview == _settingsView {
             return false
         }
         return true
@@ -340,7 +340,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
     }
     
     func enableVideo(enable:Bool) {
-        println("Video processing: \(enable)")
+        print("Video processing: \(enable)")
         
         camera.running = enable
         UIApplication.sharedApplication().idleTimerDisabled = enable
@@ -410,7 +410,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         // if something changed, force a synchronization of the key value store
         // in reality, this is probably a bad thing to be doing frequently and is likely to get the app throttled
         if changed == true {
-            println("Writing to key-value store...")
+            print("Writing to key-value store...")
             _defaults.synchronize()
         }
     }
@@ -432,9 +432,9 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         
         // read in the updates
         if let keys:NSArray = notification.userInfo?[NSUbiquitousKeyValueStoreChangedKeysKey] as? NSArray {
-            println("Processing updates...")
+            print("Processing updates...")
             for key in keys as! [String] {
-                println("Received update for \(key)")
+                print("Received update for \(key)")
                 switch key {
                 case "lock":
                     lock = _defaults.boolForKey(key)
@@ -459,7 +459,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
                     colorFilter = _defaults.stringForKey(key)
                     break;
                 default:
-                    println("Unrecognized key \(key)")
+                    print("Unrecognized key \(key)")
                     break;
                 }
             }
@@ -620,7 +620,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         }
         set {
             if let videoFilter = _videoFilters {
-                for (i, filter) in enumerate(videoFilter) {
+                for (i, filter) in videoFilter.enumerate() {
                     if let name = filter["Name"] as? String where name == newValue{
                         setVideoFilterIndex(i)
                         return;
@@ -637,7 +637,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         }
         set {
             if let colorFilters = _colorFilters {
-                for (i, filter) in enumerate(colorFilters) {
+                for (i, filter) in colorFilters.enumerate() {
                     if let name = filter["Name"] as? String where name == newValue {
                         setColorFilterIndex(i)
                         return;
@@ -650,7 +650,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
     
     var lock:Bool = false {
         didSet {
-            println("Setting lock: \(lock)")
+            print("Setting lock: \(lock)")
             if _settingsDelegate == nil {
                 if lock {
                     hideUI()
@@ -665,7 +665,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
     
     var blur:Bool = false {
         didSet {
-            println("Setting blur: \(blur)")
+            print("Setting blur: \(blur)")
             _settingsDelegate?.setBlur(blur)
             renderer.applyBlur = blur
             saveDefaults()
@@ -674,7 +674,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
     
     var invert:Bool = false {
         didSet {
-            println("Setting invert: \(invert)")
+            print("Setting invert: \(invert)")
             _settingsDelegate?.setInvert(invert)
             renderer.invertScreen = invert
             saveDefaults()
@@ -683,7 +683,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
     
     var frontCamera:Bool = false {
         didSet {
-            println("Setting front camera: \(frontCamera)")
+            print("Setting front camera: \(frontCamera)")
             camera.useFrontCamera = frontCamera
             UIView.animateWithDuration(0.5) {
                 () -> Void in

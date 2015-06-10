@@ -14,9 +14,9 @@ class ColorBuffer:MetalBuffer {
         if arguments.name == "colorParameters" {
             yuvToRGB = nil
             
-            let parameters = arguments.bufferStructType?.members as! [MTLStructMember]
+            let parameters = arguments.bufferStructType.members as [MTLStructMember]
             for parameter in parameters {
-                println("Found parameter \(parameter.name) at offset \(parameter.offset)")
+                print("Found parameter \(parameter.name) at offset \(parameter.offset)")
                 
                 switch(parameter.name) {
                 case "yuvToRGB":
@@ -24,7 +24,7 @@ class ColorBuffer:MetalBuffer {
                     yuvToRGB = Matrix3x3(buffer: pointer)
                     break;
                 default:
-                    println("Error: unknown parameter")
+                    print("Error: unknown parameter")
                     break;
                 }
             }

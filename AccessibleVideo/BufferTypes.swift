@@ -17,17 +17,19 @@ class MetalBuffer {
         let size = arguments.bufferDataSize
         let dev = MTLCreateSystemDefaultDevice()
         
-        if let b = dev.newBufferWithLength(size, options: nil) {
-            buffer = b
-            _filterBufferData = UnsafePointer<Void>(b.contents())
-            _filterBufferSize = size
-            setContents(arguments)
+        var options:MTLResourceOptions!
+        
+        if #available(iOS 9.0, *) {
+            options = MTLResourceOptions.StorageModeShared.union(MTLResourceOptions.CPUCacheModeDefaultCache)
         } else {
-            buffer = nil
-            _filterBufferData = nil
-            _filterBufferSize = 0
-            return nil
+            // Fallback on earlier versions
+            options = MTLResourceOptions.CPUCacheModeDefaultCache
         }
+
+        buffer = dev!.newBufferWithLength(size, options: options)
+        _filterBufferData = UnsafePointer<Void>(buffer!.contents())
+        _filterBufferSize = size
+        setContents(arguments)
     }
     
     required init!(base:UnsafePointer<Void>, size:Int, arguments:MTLArgument) {
@@ -59,19 +61,22 @@ class MetalBufferArray<T:MetalBuffer> {
         let size = arguments.bufferDataSize
         let dev = MTLCreateSystemDefaultDevice()
         
-        if let b = dev.newBufferWithLength(size * count, options: nil) {
-            buffer = b
-            _filterBufferData = UnsafePointer<Void>(b.contents())
-            _filterBufferSize = size
-            _members = (0..<count).map {
-                (T.self as T.Type)(base: self._filterBufferData + size * $0, size: size, arguments: arguments)!
-            }
+        var options:MTLResourceOptions!
+        
+        if #available(iOS 9.0, *) {
+            options = MTLResourceOptions.StorageModeShared.union(MTLResourceOptions.CPUCacheModeDefaultCache)
         } else {
-            buffer = nil
-            _filterBufferData = nil
-            _filterBufferSize = 0
-            return nil
+            // Fallback on earlier versions
+            options = MTLResourceOptions.CPUCacheModeDefaultCache
         }
+        
+        buffer = dev!.newBufferWithLength(size * count, options: options)
+        _filterBufferData = UnsafePointer<Void>(buffer!.contents())
+        _filterBufferSize = size
+        _members = (0..<count).map {
+            (T.self as T.Type)(base: self._filterBufferData + size * $0, size: size, arguments: arguments)!
+        }
+        
     }
     
     subscript (element:Int) -> T {
