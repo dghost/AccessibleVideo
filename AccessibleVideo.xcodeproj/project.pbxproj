@@ -8,8 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		DF048B2219E3CC9000064E81 /* Shaders.plist in Resources */ = {isa = PBXBuildFile; fileRef = DF048B2119E3CC9000064E81 /* Shaders.plist */; };
-		DF048B2419E3CCD500064E81 /* VideoFilters.plist in Resources */ = {isa = PBXBuildFile; fileRef = DF048B2319E3CCD500064E81 /* VideoFilters.plist */; };
 		DF048B2619E3F4CE00064E81 /* Sobel.metal in Sources */ = {isa = PBXBuildFile; fileRef = DF048B2519E3F4CE00064E81 /* Sobel.metal */; };
+		DF317CC31C0A909700CEF3D2 /* Filters.plist in Resources */ = {isa = PBXBuildFile; fileRef = DF317CC21C0A909700CEF3D2 /* Filters.plist */; };
+		DF317CC71C0BC5BB00CEF3D2 /* FilterModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF317CC61C0BC5BB00CEF3D2 /* FilterModel.swift */; };
 		DF58E3F71A47EBF900020B1C /* FilterBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF58E3F61A47EBF900020B1C /* FilterBuffer.swift */; };
 		DF6A115019C8091C00D20618 /* Base.metal in Sources */ = {isa = PBXBuildFile; fileRef = DF6A114F19C8091C00D20618 /* Base.metal */; };
 		DF6A115419C8109F00D20618 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DF6A115319C8109F00D20618 /* AVFoundation.framework */; };
@@ -32,14 +33,14 @@
 		DFE69F3119E0EE870072EFAC /* FilterRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFE69F3019E0EE870072EFAC /* FilterRenderer.swift */; };
 		DFF6E11A1A104E36009A3CD8 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFF6E1191A104E36009A3CD8 /* SettingsViewController.swift */; };
 		DFF6E11E1A10796D009A3CD8 /* Blur.metal in Sources */ = {isa = PBXBuildFile; fileRef = DFF6E11D1A10796D009A3CD8 /* Blur.metal */; };
-		DFF905141A3936B100501BF0 /* ColorFilters.plist in Resources */ = {isa = PBXBuildFile; fileRef = DFF905131A3936B100501BF0 /* ColorFilters.plist */; };
 		DFFEE88F19E207B700D19FFA /* MetalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFFEE88E19E207B700D19FFA /* MetalView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		DF048B2119E3CC9000064E81 /* Shaders.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Shaders.plist; path = Shaders/Shaders.plist; sourceTree = "<group>"; };
-		DF048B2319E3CCD500064E81 /* VideoFilters.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = VideoFilters.plist; sourceTree = "<group>"; };
 		DF048B2519E3F4CE00064E81 /* Sobel.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; name = Sobel.metal; path = Shaders/Sobel.metal; sourceTree = "<group>"; };
+		DF317CC21C0A909700CEF3D2 /* Filters.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Filters.plist; sourceTree = "<group>"; };
+		DF317CC61C0BC5BB00CEF3D2 /* FilterModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FilterModel.swift; sourceTree = "<group>"; };
 		DF58E3F61A47EBF900020B1C /* FilterBuffer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FilterBuffer.swift; sourceTree = "<group>"; };
 		DF6A114F19C8091C00D20618 /* Base.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; name = Base.metal; path = Shaders/Base.metal; sourceTree = "<group>"; };
 		DF6A115319C8109F00D20618 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
@@ -67,7 +68,6 @@
 		DFE69F3019E0EE870072EFAC /* FilterRenderer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FilterRenderer.swift; sourceTree = "<group>"; };
 		DFF6E1191A104E36009A3CD8 /* SettingsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		DFF6E11D1A10796D009A3CD8 /* Blur.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; name = Blur.metal; path = Shaders/Blur.metal; sourceTree = "<group>"; };
-		DFF905131A3936B100501BF0 /* ColorFilters.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = ColorFilters.plist; sourceTree = "<group>"; };
 		DFFEE88E19E207B700D19FFA /* MetalView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MetalView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -156,7 +156,6 @@
 			children = (
 				DFD2200A19C643BC00913975 /* AppDelegate.swift */,
 				DFE69F2E19E0EE140072EFAC /* CameraController.swift */,
-				DFF905131A3936B100501BF0 /* ColorFilters.plist */,
 				DFD2200E19C643BC00913975 /* Main.storyboard */,
 				DFD2200C19C643BC00913975 /* MainViewController.swift */,
 				DF9C846D1A4F634E009C962B /* Metal Renderer */,
@@ -164,7 +163,8 @@
 				DFF6E1191A104E36009A3CD8 /* SettingsViewController.swift */,
 				DF6A115119C8092600D20618 /* Shaders */,
 				DFD2200819C643BC00913975 /* Supporting Files */,
-				DF048B2319E3CCD500064E81 /* VideoFilters.plist */,
+				DF317CC21C0A909700CEF3D2 /* Filters.plist */,
+				DF317CC61C0BC5BB00CEF3D2 /* FilterModel.swift */,
 			);
 			path = AccessibleVideo;
 			sourceTree = "<group>";
@@ -212,7 +212,6 @@
 				TargetAttributes = {
 					DFD2200419C643BC00913975 = {
 						CreatedOnToolsVersion = 6.0;
-						DevelopmentTeam = G8X4XMPVS9;
 						SystemCapabilities = {
 							com.apple.iCloud = {
 								enabled = 1;
@@ -244,9 +243,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DFF905141A3936B100501BF0 /* ColorFilters.plist in Resources */,
+				DF317CC31C0A909700CEF3D2 /* Filters.plist in Resources */,
 				DFD2201019C643BC00913975 /* Main.storyboard in Resources */,
-				DF048B2419E3CCD500064E81 /* VideoFilters.plist in Resources */,
 				DF048B2219E3CC9000064E81 /* Shaders.plist in Resources */,
 				DFD2201519C643BC00913975 /* LaunchScreen.xib in Resources */,
 				DFD2201219C643BC00913975 /* Images.xcassets in Resources */,
@@ -263,6 +261,7 @@
 				DFFEE88F19E207B700D19FFA /* MetalView.swift in Sources */,
 				DFF6E11E1A10796D009A3CD8 /* Blur.metal in Sources */,
 				DFE69F2F19E0EE140072EFAC /* CameraController.swift in Sources */,
+				DF317CC71C0BC5BB00CEF3D2 /* FilterModel.swift in Sources */,
 				DF6A115019C8091C00D20618 /* Base.metal in Sources */,
 				DF048B2619E3F4CE00064E81 /* Sobel.metal in Sources */,
 				DF58E3F71A47EBF900020B1C /* FilterBuffer.swift in Sources */,
