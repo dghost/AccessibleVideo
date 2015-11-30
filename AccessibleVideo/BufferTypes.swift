@@ -74,7 +74,7 @@ class MetalBufferArray<T:MetalBuffer> {
         _filterBufferData = UnsafePointer<Void>(buffer!.contents())
         _filterBufferSize = size
         _members = (0..<count).map {
-            (T.self as T.Type)(base: self._filterBufferData + size * $0, size: size, arguments: arguments)!
+            (T.self as T.Type).init(base: self._filterBufferData + size * $0, size: size, arguments: arguments)!
         }
         
     }

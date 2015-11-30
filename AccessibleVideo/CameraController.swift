@@ -53,12 +53,10 @@ class CameraController:NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
         }
         set {
             if _captureDevice?.torchAvailable ?? false {
-                do {
-                    try _captureDevice?.lockForConfiguration()
-                } catch _ {
+                if let _ = try? _captureDevice?.lockForConfiguration() {
+                    _captureDevice?.torchMode = newValue ? .On : .Off
+                    _captureDevice?.unlockForConfiguration()
                 }
-                _captureDevice?.torchMode = newValue ? .On : .Off
-                _captureDevice?.unlockForConfiguration()
             }
         }
     }
@@ -141,11 +139,10 @@ class CameraController:NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
         
         for format in formats {
             _currentFormat = format
-            do {
-                try _captureDevice?.lockForConfiguration()
-            } catch _ {
-                return false
+            guard let _ = try? _captureDevice?.lockForConfiguration() else {
+                return false;
             }
+
             _captureDevice?.activeFormat = format
             // cap the framerate to the max set above
             _captureDevice?.activeVideoMaxFrameDuration = CMTimeMake(1, _preferredFrameRate)
@@ -227,8 +224,7 @@ class CameraController:NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
             print("...supports torch: \(device.torchAvailable)")
             
             let formats = (device.formats as! [AVCaptureDeviceFormat]).filter {
-                let formatCode = str4(Int(CMFormatDescriptionGetMediaSubType($0.formatDescription)))
-                return (formatCode == self._preferredFormat)
+                self._preferredFormat == str4(Int(CMFormatDescriptionGetMediaSubType($0.formatDescription)))
             }
             
             for format in formats {

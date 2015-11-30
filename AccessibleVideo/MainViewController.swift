@@ -157,6 +157,9 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
     
     func endRotation() {
         objc_sync_enter(self)
+        defer {
+            objc_sync_exit(self)
+        }
         if _isRotating {
             setSwipeFunctions(UIApplication.sharedApplication().statusBarOrientation)
             UIView.setAnimationsEnabled(true)
@@ -170,12 +173,14 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
             }
             _isRotating = false
         }
-        objc_sync_exit(self)
     }
     
     private var _isRotating = false
     func startRotation(coordinator:UIViewControllerTransitionCoordinator) {
         objc_sync_enter(self)
+        defer {
+            objc_sync_exit(self)
+        }
         if !_isRotating {
             _isRotating = true
 
@@ -209,7 +214,6 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
                 }
             )
         }
-        objc_sync_exit(self)
     }
     
     override func viewWillTransitionToSize(size: CGSize, withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {

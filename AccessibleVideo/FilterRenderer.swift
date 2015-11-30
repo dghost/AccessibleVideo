@@ -236,7 +236,7 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
             _colorArgs = MetalBufferArray<ColorBuffer>(arguments: fragmentArgs[0], count: _numberShaderBuffers)
         }
         
-        if _device!.supportsFeatureSet(._iOS_GPUFamily2_v1) {
+        if _device!.supportsFeatureSet(.iOS_GPUFamily2_v1) {
             print("Using high quality blur...")
             highQuality = true
             _blurPipelineStates = ["BlurX_HQ", "BlurY_HQ"].map {self.cachedPipelineStateFor($0)!}
@@ -355,17 +355,26 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
 
         let currentOrientation:UIInterfaceOrientation = _isiPad ? UIApplication.sharedApplication().statusBarOrientation : .Portrait
         
-        guard let screenDescriptor = view.renderPassDescriptor, currentOffset = _vertexStart[currentOrientation] where _rgbTexture != nil else {
+        guard let currentOffset = _vertexStart[currentOrientation] where _rgbTexture != nil else {
             return
         }
         
-        dispatch_semaphore_wait(_renderSemaphore, DISPATCH_TIME_FOREVER)
-
-        
-        // get the command buffer
         let commandBuffer = _commandQueue.commandBuffer()
+
+        dispatch_semaphore_wait(_renderSemaphore, DISPATCH_TIME_FOREVER)
+        // get the command buffer
         commandBuffer.enqueue()
-        
+        defer {
+            // commit buffers to GPU
+            commandBuffer.addCompletedHandler() {
+            (cmdb:MTLCommandBuffer!) in
+            dispatch_semaphore_signal(self._renderSemaphore)
+            return
+            }
+            
+            commandBuffer.presentDrawable(view.currentDrawable!)
+            commandBuffer.commit()
+        }
         
         
         var sourceTexture:MTLTexture = _rgbTexture
@@ -415,25 +424,20 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
         }
         
         
-        createRenderPass(commandBuffer,
-            pipeline: invertScreen ? _screenInvertState! : _screenBlitState!,
-            vertexIndex: currentOffset,
-            fragmentBuffers: filterParameters,
-            sourceTextures: [sourceTexture, blurTex, _rgbTexture],
-            descriptor: screenDescriptor,
-            viewport: self._viewport)
-        
-        swapTextures()
-        
-        // commit buffers to GPU
-        commandBuffer.addCompletedHandler( {
-            (cmdb:MTLCommandBuffer!) in
-            dispatch_semaphore_signal(self._renderSemaphore)
-            return
-            }
-        )
-        commandBuffer.presentDrawable(view.currentDrawable!)
-        commandBuffer.commit()
+        if let screenDescriptor = view.renderPassDescriptor {
+            
+            createRenderPass(commandBuffer,
+                pipeline: invertScreen ? _screenInvertState! : _screenBlitState!,
+                vertexIndex: currentOffset,
+                fragmentBuffers: filterParameters,
+                sourceTextures: [sourceTexture, blurTex, _rgbTexture],
+                descriptor: screenDescriptor,
+                viewport: self._viewport)
+            
+            swapTextures()
+            
+        }
+
         
     }
     
@@ -490,6 +494,10 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
     
     func setResolution(width width: Int, height: Int) {
         objc_sync_enter(self)
+        defer {
+            objc_sync_exit(self)
+        }
+        
         let scale = UIScreen.mainScreen().nativeScale
   
         var textureWidth = Int(_controller.view.bounds.width * scale)
@@ -509,6 +517,11 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
         print("Setting offscreen texure resolution to \(textureWidth)x\(textureHeight)")
         
         let descriptor = MTLTextureDescriptor.texture2DDescriptorWithPixelFormat(.BGRA8Unorm, width: textureWidth, height: textureHeight, mipmapped: false)
+        
+        if #available(iOS 9.0, *) {
+            descriptor.resourceOptions = MTLResourceOptions.StorageModePrivate
+            descriptor.storageMode = MTLStorageMode.Private
+        }
         
         _intermediateTextures = [descriptor,descriptor].map { self._device!.newTextureWithDescriptor($0) }
         _intermediateRenderPassDescriptor = _intermediateTextures.map {
@@ -532,9 +545,6 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
         _blurDescriptor.colorAttachments[0].storeAction = .Store
         
         setBlurBuffer()
-        
-        objc_sync_exit(self)
-
     }
     
     
@@ -543,6 +553,9 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
             
             let commandBuffer = _commandQueue.commandBuffer()
             commandBuffer.enqueue()
+            defer {
+                commandBuffer.commit()
+            }
             
             var y_texture: Unmanaged<CVMetalTexture>?
             let y_width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 0)
@@ -567,9 +580,6 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
                 sourceTextures: yuvTextures,
                 descriptor: _rgbDescriptor,
                 viewport: nil)
-            
-
-            commandBuffer.commit()
             
             CVMetalTextureCacheFlush(_textureCache, 0)
 
@@ -609,6 +619,7 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
     
     func setColorBuffer() {
         let nextBuffer = (_currentColorBuffer + 1) % _numberShaderBuffers
+        _currentColorBuffer++
 
         if _currentColorConvolution.count == 9 {
             _colorArgs[nextBuffer].yuvToRGB?.set(
@@ -621,12 +632,12 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
         } else {
             _colorArgs[nextBuffer].yuvToRGB?.clearIdentity()
         }
-        _currentColorBuffer++
 
     }
     
     func setFilterBuffer() {
         let nextBuffer = (_currentFilterBuffer + 1) % _numberShaderBuffers
+        _currentFilterBuffer++
 
         let currentBuffer = _filterArgs[nextBuffer]
         if invertScreen {
@@ -644,8 +655,6 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
             currentBuffer.lowThreshold = 0.15
             currentBuffer.highThreshold = 0.25
         }
-        _currentFilterBuffer++
-
     }
     
     var primaryColor:UIColor = UIColor(red: 0.0, green: 1.0, blue: 1.0, alpha: 0.75) {

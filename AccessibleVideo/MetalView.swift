@@ -55,7 +55,7 @@ class MetalView:UIView {
         self.opaque = true
         self.backgroundColor = nil
         _metalLayer = self.layer as! CAMetalLayer
-        
+        _metalLayer.presentsWithTransaction = false
         _metalLayer.device = _device
         _metalLayer.pixelFormat = .BGRA8Unorm
         _metalLayer.framebufferOnly = true
@@ -72,7 +72,7 @@ class MetalView:UIView {
         initCommon()
     }
     
-    required init(coder: NSCoder) {
+    required init?(coder: NSCoder) {
         super.init(coder: coder)
         initCommon()
     }
