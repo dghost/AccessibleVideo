@@ -381,7 +381,7 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
         var destDescriptor:MTLRenderPassDescriptor = _intermediateRenderPassDescriptor[_currentDestTexture]
         
         func swapTextures() {
-            self._currentSourceTexture++
+            self._currentSourceTexture += 1
             sourceTexture = self._intermediateTextures[self._currentSourceTexture]
             destDescriptor = self._intermediateRenderPassDescriptor[self._currentDestTexture]
         }
@@ -614,12 +614,12 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
             (0, offsets[1] * texelHeight),
             (0, offsets[2] * texelHeight)
         )
-        _currentBlurBuffer++
+        _currentBlurBuffer += 1
     }
     
     func setColorBuffer() {
         let nextBuffer = (_currentColorBuffer + 1) % _numberShaderBuffers
-        _currentColorBuffer++
+        _currentColorBuffer += 1
 
         if _currentColorConvolution.count == 9 {
             _colorArgs[nextBuffer].yuvToRGB?.set(
@@ -637,7 +637,7 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
     
     func setFilterBuffer() {
         let nextBuffer = (_currentFilterBuffer + 1) % _numberShaderBuffers
-        _currentFilterBuffer++
+        _currentFilterBuffer += 1
 
         let currentBuffer = _filterArgs[nextBuffer]
         if invertScreen {
