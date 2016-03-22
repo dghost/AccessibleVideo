@@ -103,9 +103,9 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         
         tapGesture.requireGestureRecognizerToFail(longPressGesture)
         
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: Selector("willEnterForeground:"), name: UIApplicationWillEnterForegroundNotification, object: nil)
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: Selector("didEnterBackground:"), name: UIApplicationDidEnterBackgroundNotification, object: nil)
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: Selector("externalUpdate:"), name:
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(MainViewController.willEnterForeground(_:)), name: UIApplicationWillEnterForegroundNotification, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(MainViewController.didEnterBackground(_:)), name: UIApplicationDidEnterBackgroundNotification, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(MainViewController.externalUpdate(_:)), name:
             NSUbiquitousKeyValueStoreDidChangeExternallyNotification
             , object: nil)
         
@@ -330,7 +330,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
     // MARK: Render Loop
     
     func startRenderLoop() {
-        _timer = CADisplayLink(target: self, selector: Selector("render"))
+        _timer = CADisplayLink(target: self, selector: #selector(MainViewController.render))
         _timer?.frameInterval = 1
         _timer?.addToRunLoop(NSRunLoop.mainRunLoop(), forMode: NSDefaultRunLoopMode)
         enableVideo(true)
@@ -364,7 +364,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
     func saveDefaults() {
         // coalesce writes to the iCloud key/value store to only occure once every 2 seconds at max
         _defaultsTimer?.invalidate()
-        _defaultsTimer = NSTimer(timeInterval: NSTimeInterval(2.0), target: self, selector: Selector("writeDefaults"), userInfo: nil, repeats: false)
+        _defaultsTimer = NSTimer(timeInterval: NSTimeInterval(2.0), target: self, selector: #selector(MainViewController.writeDefaults), userInfo: nil, repeats: false)
         NSRunLoop.currentRunLoop().addTimer(_defaultsTimer!, forMode: NSDefaultRunLoopMode)
     }
     
@@ -474,7 +474,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         }
         
         // start observing iCloud updates again
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: Selector("externalUpdate:"), name: NSUserDefaultsDidChangeNotification, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(MainViewController.externalUpdate(_:)), name: NSUserDefaultsDidChangeNotification, object: nil)
     }
     
     // MARK: UI / Overlay Manipulation
@@ -511,7 +511,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         enableUI = true
         
         if (autoHideUI) {
-            _uiTimer = NSTimer(timeInterval: NSTimeInterval(2.0), target: self, selector: Selector("hideUI"), userInfo: nil, repeats: false)
+            _uiTimer = NSTimer(timeInterval: NSTimeInterval(2.0), target: self, selector: #selector(MainViewController.hideUI), userInfo: nil, repeats: false)
             NSRunLoop.currentRunLoop().addTimer(_uiTimer!, forMode: NSDefaultRunLoopMode)
         }
     }
@@ -718,7 +718,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
                 _uiTimer = nil
             } else {
                 if _settingsDelegate == nil && enableUI {
-                    _uiTimer = NSTimer(timeInterval: NSTimeInterval(2.0), target: self, selector: Selector("hideUI"), userInfo: nil, repeats: false)
+                    _uiTimer = NSTimer(timeInterval: NSTimeInterval(2.0), target: self, selector: #selector(MainViewController.hideUI), userInfo: nil, repeats: false)
                     NSRunLoop.currentRunLoop().addTimer(_uiTimer!, forMode: NSDefaultRunLoopMode)
                 }
             }

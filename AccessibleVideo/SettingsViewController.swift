@@ -29,7 +29,7 @@ class SettingsViewController: UIViewController, SettingsViewDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         if !_isiPad {
-            let barButton = UIBarButtonItem(title: "Done", style: .Done, target: self, action: "unwind")
+            let barButton = UIBarButtonItem(title: "Done", style: .Done, target: self, action: #selector(SettingsViewController.unwind))
             self.navigationItem.rightBarButtonItem = barButton
         }
         // Do any additional setup after loading the view.

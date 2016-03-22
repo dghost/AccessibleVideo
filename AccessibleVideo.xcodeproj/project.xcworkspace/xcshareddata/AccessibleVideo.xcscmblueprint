@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "243CB3B018D5C8570178E0E0D9BF07D716D79817",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "243CB3B018D5C8570178E0E0D9BF07D716D79817" : 0,
+    "4182765C525509B305166AB949D5935FD5C85212" : 0
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "68558891-4502-4CD5-8CA3-CBF431D1662D",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "243CB3B018D5C8570178E0E0D9BF07D716D79817" : "AccessibleVideo",
+    "4182765C525509B305166AB949D5935FD5C85212" : "AccessibleVideoMBProgressHUD"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "AccessibleVideo",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "AccessibleVideo.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/dghost\/AccessibleVideo.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "243CB3B018D5C8570178E0E0D9BF07D716D79817"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/jdg\/MBProgressHUD.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "4182765C525509B305166AB949D5935FD5C85212"
+    }
+  ]
+}
