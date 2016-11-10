@@ -94,7 +94,8 @@ class CameraController:NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     lazy private var _cameraQueue: dispatch_queue_t = dispatch_queue_create("com.doomsdaytech.cameraqueue", DISPATCH_QUEUE_SERIAL)
     
     private var _preferredFormat:String = "420v"
-    private var _preferredFrameRate:Int32 = 60
+    private var _preferredMinFrameRate:Int32 = 60
+    
     private var _preferredResolution:CGSize = CGSizeMake(1280, 720)
     
     private var _preferredDevicePosition:AVCaptureDevicePosition = .Back {
@@ -127,7 +128,7 @@ class CameraController:NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
             let formatCode = str4(Int(CMFormatDescriptionGetMediaSubType($0.formatDescription)))
             let resolution = CMVideoFormatDescriptionGetDimensions($0.formatDescription)
             let ranges = ($0.videoSupportedFrameRateRanges as! [AVFrameRateRange]).filter {
-                $0.maxFrameRate >= Float64(self._preferredFrameRate)
+                $0.maxFrameRate >= Float64(self._preferredMinFrameRate)
             }
             return (formatCode == self._preferredFormat
                 && Int32(self._preferredResolution.width) <= resolution.width
@@ -145,8 +146,8 @@ class CameraController:NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
 
             _captureDevice?.activeFormat = format
             // cap the framerate to the max set above
-            _captureDevice?.activeVideoMaxFrameDuration = CMTimeMake(1, _preferredFrameRate)
-            _captureDevice?.activeVideoMinFrameDuration = CMTimeMake(1, _preferredFrameRate)
+            _captureDevice?.activeVideoMaxFrameDuration = CMTimeMake(1, _preferredMinFrameRate)
+            _captureDevice?.activeVideoMinFrameDuration = CMTimeMake(1, _preferredMinFrameRate)
             //            _captureDevice?.activeVideoMaxFrameDuration = bestFrameRate.minFrameDuration
             //            _captureDevice?.activeVideoMinFrameDuration = bestFrameRate.minFrameDuration
             _captureDevice?.unlockForConfiguration()
@@ -224,14 +225,14 @@ class CameraController:NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
             print("...supports torch: \(device.torchAvailable)")
             
             let formats = (device.formats as! [AVCaptureDeviceFormat]).filter {
-                self._preferredFormat == str4(Int(CMFormatDescriptionGetMediaSubType($0.formatDescription)))
+                return self._preferredFormat == str4(Int(CMFormatDescriptionGetMediaSubType($0.formatDescription)))
             }
             
             for format in formats {
                 let resolution = CMVideoFormatDescriptionGetDimensions(format.formatDescription)
                 
                 let ranges = (format.videoSupportedFrameRateRanges as! [AVFrameRateRange]).filter {
-                    $0.maxFrameRate >= Float64(self._preferredFrameRate)
+                    $0.maxFrameRate >= Float64(self._preferredMinFrameRate)
                 }
                 if ranges.count > 0 {
                     _captureDevices[device.position] = device
@@ -283,7 +284,7 @@ class CameraController:NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
                 let resolution = $0.1
                 let formatCode = str4(Int(CMFormatDescriptionGetMediaSubType(format.formatDescription)))
                 let ranges = (format.videoSupportedFrameRateRanges as! [AVFrameRateRange]).filter {
-                    $0.maxFrameRate >= Float64(self._preferredFrameRate)
+                    $0.maxFrameRate >= Float64(self._preferredMinFrameRate)
                 }
                 return (formatCode == self._preferredFormat
                     && Int32(self._preferredResolution.width) <= resolution.width

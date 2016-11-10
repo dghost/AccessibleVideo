@@ -99,8 +99,8 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
 
         _hud.margin = 10.0
         _hud.delegate = self
-        _hud.removeFromSuperViewOnHide = true
-        
+        _hudView.addSubview(_hud)
+
         tapGesture.requireGestureRecognizerToFail(longPressGesture)
         
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(MainViewController.willEnterForeground(_:)), name: UIApplicationWillEnterForegroundNotification, object: nil)
@@ -480,23 +480,22 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
     // MARK: UI / Overlay Manipulation
     
     func showOverlayWithText(text:String) {
-        MBProgressHUD.hideAllHUDsForView(_hudView, animated: false)
-        _hudView.addSubview(_hud)
+        _hud.hideAnimated(false)
         _hud.customView = nil
         _hud.mode = .Text
-        _hud.labelText = text
-        _hud.show(true)
-        _hud.hide(true, afterDelay: 2)
+        _hud.label.text = text
+        _hud.showAnimated(true)
+        _hud.hideAnimated(true, afterDelay: 2)
+        
     }
     
     func showOverlayWithText(text:String, andImageView imageView:UIImageView) {
-        MBProgressHUD.hideAllHUDsForView(_hudView, animated: false)
-        _hudView.addSubview(_hud)
+        _hud.hideAnimated(false)
         _hud.customView = imageView
         _hud.mode = .CustomView
-        _hud.labelText = text
-        _hud.show(true)
-        _hud.hide(true, afterDelay: 2)
+        _hud.label.text = text
+        _hud.showAnimated(true)
+        _hud.hideAnimated(true, afterDelay: 2)
     }
     
     func showLockOverlay(locked:Bool) {
