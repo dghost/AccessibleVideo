@@ -86,15 +86,14 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
         return (_currentSourceTexture + 1) % 2
     }
     
-    private var _numberBufferedFrames:Int = 2
+    private var _numberBufferedFrames:Int = 3
     private var _numberShaderBuffers:Int {
         return _numberBufferedFrames + 1
     }
     
     private var _renderSemaphore: dispatch_semaphore_t! = nil
     
-    private var _unmanagedTextureCache: Unmanaged<CVMetalTextureCache>?
-    private var _textureCache: CVMetalTextureCache! = nil
+    private var _textureCache: CVMetalTextureCache? = nil
     
     private var _vertexDesc: MTLVertexDescriptor! = nil
     
@@ -134,8 +133,7 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
         _renderSemaphore = dispatch_semaphore_create(_numberBufferedFrames)
         
         // create texture caches for CoreVideo
-        CVMetalTextureCacheCreate(nil, nil, _device!, nil, &_unmanagedTextureCache)
-        _textureCache = _unmanagedTextureCache!.takeUnretainedValue()
+        CVMetalTextureCacheCreate(nil, nil, _device!, nil, &_textureCache)
         
         // set up the full screen quads
         let data:[Float] =
@@ -477,7 +475,6 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
     }
     
     func setVideoFilter(filterPasses:[String], usesBlur:Bool = true) {
-        print("Setting filter...")
         _currentVideoFilter = filterPasses.map {self.cachedPipelineStateFor($0)!}
         _currentVideoFilterUsesBlur = usesBlur
     }
@@ -519,8 +516,9 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
         let descriptor = MTLTextureDescriptor.texture2DDescriptorWithPixelFormat(.BGRA8Unorm, width: textureWidth, height: textureHeight, mipmapped: false)
         
         if #available(iOS 9.0, *) {
-            descriptor.resourceOptions = MTLResourceOptions.StorageModePrivate
-            descriptor.storageMode = MTLStorageMode.Private
+            descriptor.resourceOptions = .StorageModePrivate
+            descriptor.storageMode = .Private
+            descriptor.usage = [.RenderTarget, .ShaderRead]
         }
         
         _intermediateTextures = [descriptor,descriptor].map { self._device!.newTextureWithDescriptor($0) }
@@ -528,7 +526,7 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
             let renderDescriptor = MTLRenderPassDescriptor()
             renderDescriptor.colorAttachments[0].texture = $0
             renderDescriptor.colorAttachments[0].loadAction = .DontCare
-            renderDescriptor.colorAttachments[0].storeAction = .DontCare
+            renderDescriptor.colorAttachments[0].storeAction = .Store
             return renderDescriptor
         }
         
@@ -549,7 +547,7 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
     
     
     func captureBuffer(sampleBuffer: CMSampleBuffer!) {
-        if _rgbTexture != nil, let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) {
+        if _rgbDescriptor != nil, let tc = _textureCache, let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) {
             
             let commandBuffer = _commandQueue.commandBuffer()
             commandBuffer.enqueue()
@@ -557,18 +555,18 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
                 commandBuffer.commit()
             }
             
-            var y_texture: Unmanaged<CVMetalTexture>?
+            var y_texture: CVMetalTexture?
             let y_width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 0)
             let y_height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 0)
-            CVMetalTextureCacheCreateTextureFromImage(kCFAllocatorDefault, _textureCache, pixelBuffer, nil, MTLPixelFormat.R8Unorm, y_width, y_height, 0, &y_texture)
+            CVMetalTextureCacheCreateTextureFromImage(kCFAllocatorDefault, tc, pixelBuffer, nil, MTLPixelFormat.R8Unorm, y_width, y_height, 0, &y_texture)
             
-            var uv_texture: Unmanaged<CVMetalTexture>?
+            var uv_texture: CVMetalTexture?
             let uv_width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 1)
             let uv_height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 1)
-            CVMetalTextureCacheCreateTextureFromImage(kCFAllocatorDefault, _textureCache, pixelBuffer, nil, MTLPixelFormat.RG8Unorm, uv_width, uv_height, 1, &uv_texture)
+            CVMetalTextureCacheCreateTextureFromImage(kCFAllocatorDefault, tc, pixelBuffer, nil, MTLPixelFormat.RG8Unorm, uv_width, uv_height, 1, &uv_texture)
             
-            let luma = CVMetalTextureGetTexture(y_texture!.takeRetainedValue())!
-            let chroma = CVMetalTextureGetTexture(uv_texture!.takeRetainedValue())!
+            let luma = CVMetalTextureGetTexture(y_texture!)!
+            let chroma = CVMetalTextureGetTexture(uv_texture!)!
             
             let yuvTextures:[MTLTexture] = [ luma, chroma ]
             
@@ -581,8 +579,7 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
                 descriptor: _rgbDescriptor,
                 viewport: nil)
             
-            CVMetalTextureCacheFlush(_textureCache, 0)
-
+            CVMetalTextureCacheFlush(tc, 0)
         }
     }
     
