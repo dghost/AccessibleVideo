@@ -223,13 +223,6 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         super.viewWillTransitionToSize(size, withTransitionCoordinator: coordinator)
     }
     
-    override func willTransitionToTraitCollection(newCollection: UITraitCollection, withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {
-        if !_isiPad {
-            self.startRotation(coordinator)
-        }
-        super.willTransitionToTraitCollection(newCollection, withTransitionCoordinator: coordinator)
-    }
-    
     func gestureRecognizer(gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWithGestureRecognizer otherGestureRecognizer: UIGestureRecognizer) -> Bool {
         return true
     }
