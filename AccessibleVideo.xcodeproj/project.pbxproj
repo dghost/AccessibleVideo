@@ -213,7 +213,7 @@
 					DFD2200419C643BC00913975 = {
 						CreatedOnToolsVersion = 6.0;
 						DevelopmentTeam = G8X4XMPVS9;
-						LastSwiftMigration = 0800;
+						LastSwiftMigration = 0820;
 						ProvisioningStyle = Manual;
 						SystemCapabilities = {
 							com.apple.iCloud = {
@@ -413,7 +413,7 @@
 				PROVISIONING_PROFILE_SPECIFIER = "Test Development";
 				SWIFT_OBJC_BRIDGING_HEADER = "AccessibleVideo-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 2.3;
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
@@ -434,7 +434,7 @@
 				PROVISIONING_PROFILE = "844e4de1-31f3-41ed-a714-ff03741587a1";
 				PROVISIONING_PROFILE_SPECIFIER = "Test Development";
 				SWIFT_OBJC_BRIDGING_HEADER = "AccessibleVideo-Bridging-Header.h";
-				SWIFT_VERSION = 2.3;
+				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};

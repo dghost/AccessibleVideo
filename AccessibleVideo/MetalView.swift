@@ -12,8 +12,8 @@ import Metal
 import QuartzCore
 
 protocol MetalViewDelegate {
-    func render(view:MetalView)
-    func resize(size:CGSize)
+    func render(_ view:MetalView)
+    func resize(_ size:CGSize)
 }
 
 class MetalView:UIView {
@@ -40,24 +40,24 @@ class MetalView:UIView {
         return _currentDrawable
     }
     
-    private var _layerSizeDidUpdate:Bool = false
-    private weak var _metalLayer:CAMetalLayer! = nil
-    private var _currentDrawable:CAMetalDrawable? = nil
-    private var _renderPassDescriptor:MTLRenderPassDescriptor? = nil
-    lazy private var _device:MTLDevice = MTLCreateSystemDefaultDevice()!
+    fileprivate var _layerSizeDidUpdate:Bool = false
+    fileprivate weak var _metalLayer:CAMetalLayer! = nil
+    fileprivate var _currentDrawable:CAMetalDrawable? = nil
+    fileprivate var _renderPassDescriptor:MTLRenderPassDescriptor? = nil
+    lazy fileprivate var _device:MTLDevice = MTLCreateSystemDefaultDevice()!
 
     
-    override class func layerClass() -> AnyClass {
+    override class var layerClass : AnyClass {
         return CAMetalLayer.self
     }
     
     func initCommon() {
-        self.opaque = true
+        self.isOpaque = true
         self.backgroundColor = nil
         _metalLayer = self.layer as! CAMetalLayer
         _metalLayer.presentsWithTransaction = false
         _metalLayer.device = _device
-        _metalLayer.pixelFormat = .BGRA8Unorm
+        _metalLayer.pixelFormat = .bgra8Unorm
         _metalLayer.framebufferOnly = true
     }
     
@@ -77,12 +77,12 @@ class MetalView:UIView {
         initCommon()
     }
 
-    func setupRenderPassDescriptorForTexture(texture:MTLTexture!) {
+    func setupRenderPassDescriptorForTexture(_ texture:MTLTexture!) {
         if _renderPassDescriptor == nil {
             _renderPassDescriptor = MTLRenderPassDescriptor()
-            _renderPassDescriptor!.colorAttachments[0].loadAction = .Clear
+            _renderPassDescriptor!.colorAttachments[0].loadAction = .clear
             _renderPassDescriptor!.colorAttachments[0].clearColor = MTLClearColor(red: 0.0, green: 0.0, blue: 0.0, alpha: 1.0)
-            _renderPassDescriptor!.colorAttachments[0].storeAction = .Store
+            _renderPassDescriptor!.colorAttachments[0].storeAction = .store
         }
         
         _renderPassDescriptor!.colorAttachments[0].texture = texture

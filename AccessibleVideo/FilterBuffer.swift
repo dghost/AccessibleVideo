@@ -7,10 +7,10 @@
 //
 
 class FilterBuffer:MetalBuffer {
-    private var _lowThreshold:UnsafeMutablePointer<Float32> = nil
-    private var _highThreshold:UnsafeMutablePointer<Float32> = nil
+    fileprivate var _lowThreshold:UnsafeMutablePointer<Float32>! = nil
+    fileprivate var _highThreshold:UnsafeMutablePointer<Float32>! = nil
     
-    override func setContents(arguments: MTLArgument) {
+    override func setContents(_ arguments: MTLArgument) {
         if arguments.name == "filterParameters" {
             primaryColor = nil
             secondaryColor = nil
@@ -20,23 +20,20 @@ class FilterBuffer:MetalBuffer {
             let parameters = arguments.bufferStructType.members as [MTLStructMember]
             for parameter in parameters {
                 print("Found parameter \(parameter.name) at offset \(parameter.offset)")
+                let pointer = _filterBufferData.advanced(by: parameter.offset)
                 
                 switch(parameter.name) {
                 case "primaryColor":
-                    let pointer = UnsafeMutablePointer<UInt8>(_filterBufferData + parameter.offset)
-                    primaryColor = Color(buffer: pointer)
+                    primaryColor = Color(buffer: pointer.assumingMemoryBound(to: UInt8.self))
                     break;
                 case "secondaryColor":
-                    let pointer = UnsafeMutablePointer<UInt8>(_filterBufferData + parameter.offset)
-                    secondaryColor = Color(buffer: pointer)
+                    secondaryColor = Color(buffer: pointer.assumingMemoryBound(to: UInt8.self))
                     break;
                 case "lowThreshold":
-                    let pointer = UnsafeMutablePointer<Float32>(_filterBufferData + parameter.offset)
-                    _lowThreshold = pointer
+                    _lowThreshold = pointer.assumingMemoryBound(to: Float32.self)
                     break;
                 case "highThreshold":
-                    let pointer = UnsafeMutablePointer<Float32>(_filterBufferData + parameter.offset)
-                    _highThreshold = pointer
+                    _highThreshold = pointer.assumingMemoryBound(to: Float32.self)
                     break;
                 default:
                     print("Error: unknown parameter")
@@ -47,8 +44,8 @@ class FilterBuffer:MetalBuffer {
     }
 
     
-    var primaryColor:Color? = nil
-    var secondaryColor:Color? = nil
+    var primaryColor:Color! = nil
+    var secondaryColor:Color! = nil
     
     var lowThreshold:Float32 {
         get {

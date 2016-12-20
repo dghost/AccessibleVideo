@@ -9,9 +9,9 @@
 import UIKit
 
 protocol SettingsViewDelegate {
-    func setBlur(on:Bool)
-    func setAutoHide(on:Bool)
-    func setInvert(on:Bool)
+    func setBlur(_ on:Bool)
+    func setAutoHide(_ on:Bool)
+    func setInvert(_ on:Bool)
 }
 
 class SettingsViewController: UIViewController, SettingsViewDelegate {
@@ -24,12 +24,12 @@ class SettingsViewController: UIViewController, SettingsViewDelegate {
     
     @IBOutlet weak var invertSwitch: UISwitch!
     
-    lazy private var _isiPad:Bool = (UIDevice.currentDevice().userInterfaceIdiom == .Pad)
+    lazy fileprivate var _isiPad:Bool = (UIDevice.current.userInterfaceIdiom == .pad)
     
     override func viewDidLoad() {
         super.viewDidLoad()
         if !_isiPad {
-            let barButton = UIBarButtonItem(title: "Done", style: .Done, target: self, action: #selector(SettingsViewController.unwind))
+            let barButton = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(SettingsViewController.performUnwind))
             self.navigationItem.rightBarButtonItem = barButton
         }
         // Do any additional setup after loading the view.
@@ -40,50 +40,50 @@ class SettingsViewController: UIViewController, SettingsViewDelegate {
         // Dispose of any resources that can be recreated.
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         blurSwitch.setOn(delegate.blur, animated: false)
         autoHideSwitch.setOn(delegate.autoHideUI, animated: false)
         invertSwitch.setOn(delegate.invert, animated: false)
     }
     
-    func setBlur(on: Bool) {
-        if blurSwitch.on != on {
+    func setBlur(_ on: Bool) {
+        if blurSwitch.isOn != on {
             blurSwitch.setOn(on, animated: true)
         }
     }
     
-    @IBAction func handleBlur   (sender: UISwitch!) {
-        if delegate.blur != blurSwitch.on {
-            delegate.blur = blurSwitch.on
+    @IBAction func handleBlur   (_ sender: UISwitch!) {
+        if delegate.blur != blurSwitch.isOn {
+            delegate.blur = blurSwitch.isOn
         }
     }
     
-    func setAutoHide(on: Bool) {
-        if autoHideSwitch.on != on {
+    func setAutoHide(_ on: Bool) {
+        if autoHideSwitch.isOn != on {
             autoHideSwitch.setOn(on, animated: true)
         }
     }
     
-    @IBAction func handleAutoHideUI(sender: UISwitch) {
-        if delegate.autoHideUI != autoHideSwitch.on {
-            delegate.autoHideUI = autoHideSwitch.on
+    @IBAction func handleAutoHideUI(_ sender: UISwitch) {
+        if delegate.autoHideUI != autoHideSwitch.isOn {
+            delegate.autoHideUI = autoHideSwitch.isOn
         }
     }
     
-    func setInvert(on: Bool) {
-        if invertSwitch.on != on {
+    func setInvert(_ on: Bool) {
+        if invertSwitch.isOn != on {
             invertSwitch.setOn(on, animated: true)
         }
     }
     
-    @IBAction func handleInvertUI(sender: AnyObject) {
-        if delegate.invert != invertSwitch.on {
-            delegate.invert = invertSwitch.on
+    @IBAction func handleInvertUI(_ sender: AnyObject) {
+        if delegate.invert != invertSwitch.isOn {
+            delegate.invert = invertSwitch.isOn
         }
     }
     
-    func unwind() {
-        self.performSegueWithIdentifier("unwind", sender: self)
+    func performUnwind() {
+        self.performSegue(withIdentifier: "unwind", sender: self)
     }
 
 }

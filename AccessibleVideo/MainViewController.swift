@@ -18,8 +18,8 @@ protocol ControlsDelegate {
     var invert:Bool { get set }
     var frontCamera:Bool { get set }
     var autoHideUI:Bool { get set }
-    var videoFilter:String? { get set }
-    var colorFilter:String? { get set }
+    var videoFilter:String { get set }
+    var colorFilter:String { get set }
 }
 
 class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopoverPresentationControllerDelegate, MBProgressHUDDelegate, ControlsDelegate {
@@ -38,45 +38,46 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
     
     var renderview: MetalView! = nil
     
-    private var _filters = FilterModel(path:NSBundle.mainBundle().pathForResource("Filters", ofType: "plist")!)!
+    fileprivate var _filters = FilterModel(path:Bundle.main.path(forResource: "Filters", ofType: "plist")!)!
 
 
     var _swipeActions = Dictionary<UInt, () -> ()> ()
     
     // MARK: Private properties
     
-    private var _timer: CADisplayLink? = nil
+    fileprivate var _timer: CADisplayLink? = nil
     
-    lazy private var _hud: MBProgressHUD! = MBProgressHUD()
+    lazy fileprivate var _hud: MBProgressHUD! = MBProgressHUD()
     
-    private var _lockedImage = UIImageView(image: UIImage(named: "Lock"))
-    private var _unlockedImage = UIImageView(image: UIImage(named: "Unlock"))
-    private var _filterImage = UIImageView(image: UIImage(named: "VideoFilter"))
-    private var _colorImage = UIImageView(image: UIImage(named: "ColorFilter"))
+    fileprivate var _lockedImage = UIImageView(image: UIImage(named: "Lock"))
+    fileprivate var _unlockedImage = UIImageView(image: UIImage(named: "Unlock"))
+    fileprivate var _filterImage = UIImageView(image: UIImage(named: "VideoFilter"))
+    fileprivate var _colorImage = UIImageView(image: UIImage(named: "ColorFilter"))
     
-    lazy private var _defaults = NSUbiquitousKeyValueStore.defaultStore()
-    private var _defaultsTimer:NSTimer? = nil
+    lazy fileprivate var _defaults = NSUbiquitousKeyValueStore.default()
+    fileprivate var _defaultsTimer:Timer? = nil
     
-    private var _uiTimer:NSTimer? = nil
+    fileprivate var _uiTimer:Timer? = nil
     
-    private var _settingsDelegate:SettingsViewDelegate? = nil
+    fileprivate var _settingsDelegate:SettingsViewDelegate? = nil
     
-    private var _currentVideoFilter:Int = 0
-    private var _currentColorFilter:Int = 0
-    
-    private var _counterRotation:CGAffineTransform = CGAffineTransformIdentity
-    
-    lazy private var _isiPad:Bool = (UIDevice.currentDevice().userInterfaceIdiom == .Pad)
+    fileprivate var _currentVideoFilter:VideoFilter = VideoFilter()
 
-    private var _buttonEnabledColor = UIColor(red: 0.4, green: 1.0, blue: 1.0, alpha: 1.0)
+    fileprivate var _currentColorFilter:InputFilter = InputFilter()
+    
+    fileprivate var _counterRotation:CGAffineTransform = CGAffineTransform.identity
+    
+    lazy fileprivate var _isiPad:Bool = (UIDevice.current.userInterfaceIdiom == .pad)
+
+    fileprivate var _buttonEnabledColor = UIColor(red: 0.4, green: 1.0, blue: 1.0, alpha: 1.0)
 
     // MARK: Constructors / Deconstructors
     
     deinit {
         writeDefaults()
-        NSNotificationCenter.defaultCenter().removeObserver(self, name: UIApplicationWillEnterForegroundNotification, object: nil)
-        NSNotificationCenter.defaultCenter().removeObserver(self, name: UIApplicationDidEnterBackgroundNotification, object: nil)
-        NSNotificationCenter.defaultCenter().removeObserver(self, name: NSUserDefaultsDidChangeNotification, object:nil)
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name.UIApplicationWillEnterForeground, object: nil)
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name.UIApplicationDidEnterBackground, object: nil)
+        NotificationCenter.default.removeObserver(self, name: UserDefaults.didChangeNotification, object:nil)
     }
     
     // MARK: UIViewController overrides
@@ -85,28 +86,28 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
 
         super.viewDidLoad()
         
-        let scale = UIScreen.mainScreen().nativeScale
+        let scale = UIScreen.main.nativeScale
 
-        _switchView.tintColor = UIColor.whiteColor()
+        _switchView.tintColor = UIColor.white
         _switchView.layer.shouldRasterize = true
         _switchView.layer.rasterizationScale = scale
-        _switchView.hidden = true
+        _switchView.isHidden = true
         
-        _settingsView.tintColor = UIColor.whiteColor()
+        _settingsView.tintColor = UIColor.white
         _settingsView.layer.shouldRasterize = true
         _settingsView.layer.rasterizationScale = scale
-        _settingsView.hidden = true
+        _settingsView.isHidden = true
 
         _hud.margin = 10.0
         _hud.delegate = self
         _hudView.addSubview(_hud)
 
-        tapGesture.requireGestureRecognizerToFail(longPressGesture)
+        tapGesture.require(toFail: longPressGesture)
         
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(MainViewController.willEnterForeground(_:)), name: UIApplicationWillEnterForegroundNotification, object: nil)
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(MainViewController.didEnterBackground(_:)), name: UIApplicationDidEnterBackgroundNotification, object: nil)
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(MainViewController.externalUpdate(_:)), name:
-            NSUbiquitousKeyValueStoreDidChangeExternallyNotification
+        NotificationCenter.default.addObserver(self, selector: #selector(MainViewController.willEnterForeground(_:)), name: NSNotification.Name.UIApplicationWillEnterForeground, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(MainViewController.didEnterBackground(_:)), name: NSNotification.Name.UIApplicationDidEnterBackground, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(MainViewController.externalUpdate(_:)), name:
+            NSUbiquitousKeyValueStore.didChangeExternallyNotification
             , object: nil)
         
         renderer = FilterRenderer(viewController: self)
@@ -130,16 +131,16 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         // Dispose of any resources that can be recreated.
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         enableVideo(true)
-        setSwipeFunctions(UIApplication.sharedApplication().statusBarOrientation)
+        setSwipeFunctions(UIApplication.shared.statusBarOrientation)
     }
     
-    override func viewDidDisappear(animated: Bool) {
+    override func viewDidDisappear(_ animated: Bool) {
         enableVideo(false)
     }
     
-    func willEnterForeground(sender : AnyObject) {
+    func willEnterForeground(_ sender : AnyObject) {
         enableVideo(true)
         _defaults.synchronize()
         loadDefaults()
@@ -150,7 +151,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         }
     }
     
-    func didEnterBackground(sender : AnyObject) {
+    func didEnterBackground(_ sender : AnyObject) {
         writeDefaults()
         enableVideo(false)
     }
@@ -161,22 +162,22 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
             objc_sync_exit(self)
         }
         if _isRotating {
-            setSwipeFunctions(UIApplication.sharedApplication().statusBarOrientation)
+            setSwipeFunctions(UIApplication.shared.statusBarOrientation)
             UIView.setAnimationsEnabled(true)
             
-            UIView.animateWithDuration(0.5)
-                {
+            UIView.animate(withDuration: 0.5, animations: {
                     () -> Void in
                     self._settingsView.transform = self._counterRotation
                     self._switchView.transform = self._counterRotation
                     self._hudView.transform = self._counterRotation
-            }
+            })
+                
             _isRotating = false
         }
     }
     
-    private var _isRotating = false
-    func startRotation(coordinator:UIViewControllerTransitionCoordinator) {
+    fileprivate var _isRotating = false
+    func startRotation(_ coordinator:UIViewControllerTransitionCoordinator) {
         objc_sync_enter(self)
         defer {
             objc_sync_exit(self)
@@ -188,21 +189,21 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
                 UIView.setAnimationsEnabled(false)
             }
             
-            let transform = coordinator.targetTransform()
+            let transform = coordinator.targetTransform
 
-            let invertedRotation = CGAffineTransformInvert(transform)
+            let invertedRotation = transform.inverted()
             
             
             let currentBounds = self.view.bounds
             let settingsFrame = self._settingsView.frame
             let switchFrame = self._switchView.frame
             let hudFrame = self._hudView.frame
-            self._counterRotation = CGAffineTransformConcat(self._counterRotation, transform)
+            self._counterRotation = self._counterRotation.concatenating(transform)
 
-            coordinator.animateAlongsideTransition(
-                {
+            coordinator.animate(
+                alongsideTransition: {
                     (_) -> Void in
-                    self.view.transform = CGAffineTransformConcat(self.view.transform, invertedRotation)
+                    self.view.transform = self.view.transform.concatenating(invertedRotation)
                     self.view.bounds = currentBounds
                     self._settingsView.frame = settingsFrame
                     self._switchView.frame = switchFrame
@@ -216,18 +217,18 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         }
     }
     
-    override func viewWillTransitionToSize(size: CGSize, withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         if !_isiPad {
             self.startRotation(coordinator)
         }
-        super.viewWillTransitionToSize(size, withTransitionCoordinator: coordinator)
+        super.viewWillTransition(to: size, with: coordinator)
     }
     
-    func gestureRecognizer(gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWithGestureRecognizer otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
         return true
     }
     
-    func gestureRecognizer(gestureRecognizer: UIGestureRecognizer, shouldReceiveTouch touch: UITouch) -> Bool {
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
 
         if touch.view!.superview == _switchView || touch.view!.superview == _settingsView {
             return false
@@ -235,17 +236,17 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         return true
     }
     
-    @IBAction func handleSettingsButton(sender: UIButton) {
+    @IBAction func handleSettingsButton(_ sender: UIButton) {
         if renderer.highQuality {
-            self.performSegueWithIdentifier("settings-hq", sender: self)
+            self.performSegue(withIdentifier: "settings-hq", sender: self)
         } else {
-            self.performSegueWithIdentifier("settings", sender: self)
+            self.performSegue(withIdentifier: "settings", sender: self)
         }
     }
     
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "settings" || segue.identifier == "settings-hq" {
-            let nav = segue.destinationViewController as! UINavigationController
+            let nav = segue.destination as! UINavigationController
             let popover = nav.viewControllers.first as! SettingsViewController
             
             // set the navigation controller to be it's own popover presentation controller delegate
@@ -259,44 +260,44 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
             // kill the UI dismissal timer
             _uiTimer?.invalidate()
             enableUI = true
-            UIView.animateWithDuration(0.5) {
+            UIView.animate(withDuration: 0.5, animations: {
                 () -> Void in
                 self._settingsView.tintColor = self._buttonEnabledColor
-            }
+            }) 
         }
     }
     
-    func setSwipeFunctions(orientation:UIInterfaceOrientation) {
+    func setSwipeFunctions(_ orientation:UIInterfaceOrientation) {
         if (_isiPad) {
-            _swipeActions[UISwipeGestureRecognizerDirection.Left.rawValue] = nextVideoFilter
-            _swipeActions[UISwipeGestureRecognizerDirection.Right.rawValue] = prevVideoFilter
-            _swipeActions[UISwipeGestureRecognizerDirection.Down.rawValue] = nextColorFilter
-            _swipeActions[UISwipeGestureRecognizerDirection.Up.rawValue] = prevColorFilter
+            _swipeActions[UISwipeGestureRecognizerDirection.left.rawValue] = nextVideoFilter
+            _swipeActions[UISwipeGestureRecognizerDirection.right.rawValue] = prevVideoFilter
+            _swipeActions[UISwipeGestureRecognizerDirection.down.rawValue] = nextColorFilter
+            _swipeActions[UISwipeGestureRecognizerDirection.up.rawValue] = prevColorFilter
         } else {
             switch(orientation) {
-            case .Portrait:
-                _swipeActions[UISwipeGestureRecognizerDirection.Left.rawValue] = nextVideoFilter
-                _swipeActions[UISwipeGestureRecognizerDirection.Right.rawValue] = prevVideoFilter
-                _swipeActions[UISwipeGestureRecognizerDirection.Up.rawValue] = nextColorFilter
-                _swipeActions[UISwipeGestureRecognizerDirection.Down.rawValue] = prevColorFilter
+            case .portrait:
+                _swipeActions[UISwipeGestureRecognizerDirection.left.rawValue] = nextVideoFilter
+                _swipeActions[UISwipeGestureRecognizerDirection.right.rawValue] = prevVideoFilter
+                _swipeActions[UISwipeGestureRecognizerDirection.up.rawValue] = nextColorFilter
+                _swipeActions[UISwipeGestureRecognizerDirection.down.rawValue] = prevColorFilter
                 break;
-            case .PortraitUpsideDown:
-                _swipeActions[UISwipeGestureRecognizerDirection.Right.rawValue] = nextVideoFilter
-                _swipeActions[UISwipeGestureRecognizerDirection.Left.rawValue] = prevVideoFilter
-                _swipeActions[UISwipeGestureRecognizerDirection.Down.rawValue] = nextColorFilter
-                _swipeActions[UISwipeGestureRecognizerDirection.Up.rawValue] = prevColorFilter
+            case .portraitUpsideDown:
+                _swipeActions[UISwipeGestureRecognizerDirection.right.rawValue] = nextVideoFilter
+                _swipeActions[UISwipeGestureRecognizerDirection.left.rawValue] = prevVideoFilter
+                _swipeActions[UISwipeGestureRecognizerDirection.down.rawValue] = nextColorFilter
+                _swipeActions[UISwipeGestureRecognizerDirection.up.rawValue] = prevColorFilter
                 break;
-            case .LandscapeLeft:
-                _swipeActions[UISwipeGestureRecognizerDirection.Up.rawValue] = nextVideoFilter
-                _swipeActions[UISwipeGestureRecognizerDirection.Down.rawValue] = prevVideoFilter
-                _swipeActions[UISwipeGestureRecognizerDirection.Left.rawValue] = nextColorFilter
-                _swipeActions[UISwipeGestureRecognizerDirection.Right.rawValue] = prevColorFilter
+            case .landscapeLeft:
+                _swipeActions[UISwipeGestureRecognizerDirection.up.rawValue] = nextVideoFilter
+                _swipeActions[UISwipeGestureRecognizerDirection.down.rawValue] = prevVideoFilter
+                _swipeActions[UISwipeGestureRecognizerDirection.left.rawValue] = nextColorFilter
+                _swipeActions[UISwipeGestureRecognizerDirection.right.rawValue] = prevColorFilter
                 break;
-            case .LandscapeRight:
-                _swipeActions[UISwipeGestureRecognizerDirection.Up.rawValue] = nextVideoFilter
-                _swipeActions[UISwipeGestureRecognizerDirection.Down.rawValue] = prevVideoFilter
-                _swipeActions[UISwipeGestureRecognizerDirection.Right.rawValue] = nextColorFilter
-                _swipeActions[UISwipeGestureRecognizerDirection.Left.rawValue] = prevColorFilter
+            case .landscapeRight:
+                _swipeActions[UISwipeGestureRecognizerDirection.up.rawValue] = nextVideoFilter
+                _swipeActions[UISwipeGestureRecognizerDirection.down.rawValue] = prevVideoFilter
+                _swipeActions[UISwipeGestureRecognizerDirection.right.rawValue] = nextColorFilter
+                _swipeActions[UISwipeGestureRecognizerDirection.left.rawValue] = prevColorFilter
                 break;
             default:
                 break;
@@ -304,13 +305,13 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         }
     }
     
-    @IBAction func unwindSegue (segue:UIStoryboardSegue){
+    @IBAction func unwindSegue (_ segue:UIStoryboardSegue){
         if (!_isiPad) {
             _settingsDelegate = nil
-            UIView.animateWithDuration(0.5) {
+            UIView.animate(withDuration: 0.5, animations: {
                 () -> Void in
-                self._settingsView.tintColor = UIColor.whiteColor()
-            }
+                self._settingsView.tintColor = UIColor.white
+            }) 
             saveDefaults()
             if lock {
                 hideUI()
@@ -325,7 +326,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
     func startRenderLoop() {
         _timer = CADisplayLink(target: self, selector: #selector(MainViewController.render))
         _timer?.frameInterval = 1
-        _timer?.addToRunLoop(NSRunLoop.mainRunLoop(), forMode: NSDefaultRunLoopMode)
+        _timer?.add(to: RunLoop.main, forMode: RunLoopMode.defaultRunLoopMode)
         enableVideo(true)
 
     }
@@ -336,13 +337,13 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         _timer = nil
     }
     
-    func enableVideo(enable:Bool) {
+    func enableVideo(_ enable:Bool) {
         print("Video processing: \(enable)")
         
         camera.running = enable
-        UIApplication.sharedApplication().idleTimerDisabled = enable
+        UIApplication.shared.isIdleTimerDisabled = enable
         
-        _timer?.paused = !enable
+        _timer?.isPaused = !enable
         
     }
     
@@ -357,8 +358,8 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
     func saveDefaults() {
         // coalesce writes to the iCloud key/value store to only occure once every 2 seconds at max
         _defaultsTimer?.invalidate()
-        _defaultsTimer = NSTimer(timeInterval: NSTimeInterval(2.0), target: self, selector: #selector(MainViewController.writeDefaults), userInfo: nil, repeats: false)
-        NSRunLoop.currentRunLoop().addTimer(_defaultsTimer!, forMode: NSDefaultRunLoopMode)
+        _defaultsTimer = Timer(timeInterval: TimeInterval(2.0), target: self, selector: #selector(MainViewController.writeDefaults), userInfo: nil, repeats: false)
+        RunLoop.current.add(_defaultsTimer!, forMode: RunLoopMode.defaultRunLoopMode)
     }
     
     func writeDefaults() {
@@ -367,40 +368,40 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         var changed:Bool = false
         
         // synchronize values in the key value store
-        if _defaults.boolForKey("lock") != lock {
-            _defaults.setBool(lock, forKey: "lock")
+        if _defaults.bool(forKey: "lock") != lock {
+            _defaults.set(lock, forKey: "lock")
             changed = true
         }
         
-        if _defaults.boolForKey("autoHideUI") != autoHideUI {
-            _defaults.setBool(autoHideUI, forKey: "autoHideUI")
+        if _defaults.bool(forKey: "autoHideUI") != autoHideUI {
+            _defaults.set(autoHideUI, forKey: "autoHideUI")
             changed = true
         }
         
-        if _defaults.boolForKey("blur") != blur {
-            _defaults.setBool(blur, forKey: "blur")
+        if _defaults.bool(forKey: "blur") != blur {
+            _defaults.set(blur, forKey: "blur")
             changed = true
         }
         
-        if _defaults.boolForKey("invert") != invert {
-            _defaults.setBool(invert, forKey: "invert")
+        if _defaults.bool(forKey: "invert") != invert {
+            _defaults.set(invert, forKey: "invert")
             changed = true
         }
         
         if camera.supportsFrontCamera {
-            if _defaults.boolForKey("useFrontCamera") != frontCamera {
-                _defaults.setBool(frontCamera, forKey: "useFrontCamera")
+            if _defaults.bool(forKey: "useFrontCamera") != frontCamera {
+                _defaults.set(frontCamera, forKey: "useFrontCamera")
                 changed = true
             }
         }
         
-        if _defaults.stringForKey("videoFilter") != videoFilter {
-            _defaults.setString(videoFilter, forKey: "videoFilter")
+        if _defaults.string(forKey: "videoFilter") != videoFilter {
+            _defaults.set(videoFilter, forKey: "videoFilter")
             changed = true
         }
 
-        if _defaults.stringForKey("colorFilter") != colorFilter {
-            _defaults.setString(colorFilter, forKey: "colorFilter")
+        if _defaults.string(forKey: "colorFilter") != colorFilter {
+            _defaults.set(colorFilter, forKey: "colorFilter")
             changed = true
         }
         
@@ -414,51 +415,51 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
     
     func loadDefaults() {
         // load the defaults from the key value store
-        autoHideUI = _defaults.boolForKey("autoHideUI")
-        lock = _defaults.boolForKey("lock")
-        blur = _defaults.boolForKey("blur")
-        invert = _defaults.boolForKey("invert")
-        frontCamera = camera.supportsFrontCamera  ? _defaults.boolForKey("useFrontCamera") : false
-        colorFilter = _defaults.stringForKey("colorFilter")
-        videoFilter = _defaults.stringForKey("videoFilter")
+        autoHideUI = _defaults.bool(forKey: "autoHideUI")
+        lock = _defaults.bool(forKey: "lock")
+        blur = _defaults.bool(forKey: "blur")
+        invert = _defaults.bool(forKey: "invert")
+        frontCamera = camera.supportsFrontCamera  ? _defaults.bool(forKey: "useFrontCamera") : false
+        colorFilter = _defaults.string(forKey: "colorFilter") ?? ""
+        videoFilter = _defaults.string(forKey: "videoFilter") ?? ""
     }
     
-    func externalUpdate(notification:NSNotification) {
+    func externalUpdate(_ notification:Notification) {
         
         
         // read in the updates
-        guard let keys:NSArray = notification.userInfo?[NSUbiquitousKeyValueStoreChangedKeysKey] as? NSArray  else {
+        guard let keys:NSArray = notification.userInfo?[NSUbiquitousKeyValueStoreChangedKeysKey] as? NSArray else {
             return
         }
         
         // stop observing iCloud updates while we update
-        NSNotificationCenter.defaultCenter().removeObserver(self, name: NSUserDefaultsDidChangeNotification, object:nil)
+        NotificationCenter.default.removeObserver(self, name: UserDefaults.didChangeNotification, object:nil)
   
         print("Processing updates...")
         for key in keys as! [String] {
             print("Received update for \(key)")
             switch key {
             case "lock":
-                lock = _defaults.boolForKey(key)
+                lock = _defaults.bool(forKey: key)
                 break;
             case "autoHideUI":
-                autoHideUI = _defaults.boolForKey(key)
+                autoHideUI = _defaults.bool(forKey: key)
                 break;
             case "blur":
-                blur = _defaults.boolForKey(key)
+                blur = _defaults.bool(forKey: key)
                 break;
             case "invert":
-                invert = _defaults.boolForKey(key)
+                invert = _defaults.bool(forKey: key)
                 break;
             case "useFrontCamera":
                 if camera.supportsFrontCamera {
-                    frontCamera = _defaults.boolForKey(key)
+                    frontCamera = _defaults.bool(forKey: key)
                 }
             case "videoFilter":
-                videoFilter = _defaults.stringForKey(key)
+                videoFilter = _defaults.string(forKey: key) ?? ""
                 break;
             case "colorFilter":
-                colorFilter = _defaults.stringForKey(key)
+                colorFilter = _defaults.string(forKey: key) ?? ""
                 break;
             default:
                 print("Unrecognized key \(key)")
@@ -467,31 +468,31 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         }
         
         // start observing iCloud updates again
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(MainViewController.externalUpdate(_:)), name: NSUserDefaultsDidChangeNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(MainViewController.externalUpdate(_:)), name: UserDefaults.didChangeNotification, object: nil)
     }
     
     // MARK: UI / Overlay Manipulation
     
-    func showOverlayWithText(text:String) {
-        _hud.hideAnimated(false)
+    func showOverlayWithText(_ text:String) {
+        _hud.hide(animated: false)
         _hud.customView = nil
-        _hud.mode = .Text
+        _hud.mode = .text
         _hud.label.text = text
-        _hud.showAnimated(true)
-        _hud.hideAnimated(true, afterDelay: 2)
+        _hud.show(animated: true)
+        _hud.hide(animated: true, afterDelay: 2)
         
     }
     
-    func showOverlayWithText(text:String, andImageView imageView:UIImageView) {
-        _hud.hideAnimated(false)
+    func showOverlayWithText(_ text:String, andImageView imageView:UIImageView) {
+        _hud.hide(animated: false)
         _hud.customView = imageView
-        _hud.mode = .CustomView
+        _hud.mode = .customView
         _hud.label.text = text
-        _hud.showAnimated(true)
-        _hud.hideAnimated(true, afterDelay: 2)
+        _hud.show(animated: true)
+        _hud.hide(animated: true, afterDelay: 2)
     }
     
-    func showLockOverlay(locked:Bool) {
+    func showLockOverlay(_ locked:Bool) {
         if locked {
             showOverlayWithText("Locked", andImageView: _lockedImage)
         } else {
@@ -503,8 +504,8 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         enableUI = true
         
         if (autoHideUI) {
-            _uiTimer = NSTimer(timeInterval: NSTimeInterval(2.0), target: self, selector: #selector(MainViewController.hideUI), userInfo: nil, repeats: false)
-            NSRunLoop.currentRunLoop().addTimer(_uiTimer!, forMode: NSDefaultRunLoopMode)
+            _uiTimer = Timer(timeInterval: TimeInterval(2.0), target: self, selector: #selector(MainViewController.hideUI), userInfo: nil, repeats: false)
+            RunLoop.current.add(_uiTimer!, forMode: RunLoopMode.defaultRunLoopMode)
         }
     }
     
@@ -517,12 +518,12 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
             _uiTimer?.invalidate()
             _uiTimer = nil
             if enableUI != newValue {
-                if _settingsView.hidden == newValue {
+                if _settingsView.isHidden == newValue {
                     _settingsView.layer.shouldRasterize = false
-                    UIView.transitionWithView(_settingsView, duration: 0.25, options: UIViewAnimationOptions.TransitionCrossDissolve,
+                    UIView.transition(with: _settingsView, duration: 0.25, options: UIViewAnimationOptions.transitionCrossDissolve,
                         animations: {
                         () -> Void in
-                        self._settingsView.hidden = !newValue
+                        self._settingsView.isHidden = !newValue
                         },
                         completion: {
                         (finished:Bool) -> Void in
@@ -533,13 +534,13 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
                 
                 let cameraEnable = camera.supportsFrontCamera ? newValue : false
                 
-                if cameraEnable == _switchView.hidden {
+                if cameraEnable == _switchView.isHidden {
                     _switchView.layer.shouldRasterize = false
 
-                    UIView.transitionWithView(_switchView, duration: 0.25, options: UIViewAnimationOptions.TransitionCrossDissolve,
+                    UIView.transition(with: _switchView, duration: 0.25, options: UIViewAnimationOptions.transitionCrossDissolve,
                         animations: {
                         () -> Void in
-                            self._switchView.hidden = !cameraEnable
+                            self._switchView.isHidden = !cameraEnable
                         },
                         completion: {
                             (finished:Bool) -> Void in
@@ -552,103 +553,78 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         }
     }
     
-    // MARK: Filter Manipulation
-    
-    func setVideoFilterIndex(newFilter:Int) {
-        _currentVideoFilter = newFilter
-        let passes = (_filters["Video"]?[newFilter]["Passes"] as? [String]) ?? ["blit"]
-        let blur = (_filters["Video"]?[newFilter]["CanUseBlur"] as? Bool) ?? true
-        renderer.setVideoFilter(passes, usesBlur: blur)
-        showOverlayWithText(videoFilter!, andImageView: _filterImage)
-        saveDefaults()
+    // MARK: Filter Manipulation    
+    func setVideoFilter(_ filter:VideoFilter)
+    {
+        if (_currentVideoFilter.name != filter.name)
+        {
+            _currentVideoFilter = filter
+            renderer.setVideoFilter(filter)
+            showOverlayWithText(filter.name, andImageView: _filterImage)
+            saveDefaults()
+        }
     }
     
     func nextVideoFilter() {
-        guard let vidFilter = _filters["Video"]  else {
-            return
+        if let filter = _filters.videoFilters.nextFilter()
+        {
+            setVideoFilter(filter)
         }
-        let newFilter = (_currentVideoFilter + 1) % vidFilter.count
-        setVideoFilterIndex(newFilter)
-        
     }
     
     func prevVideoFilter() {
-        guard let vidFilter = _filters["Video"] else {
-            return
+        if let filter = _filters.videoFilters.prevFilter()
+        {
+            setVideoFilter(filter)
         }
-        
-        var newFilter = (_currentVideoFilter - 1) % vidFilter.count
-        if newFilter < 0 {
-            newFilter += vidFilter.count
-        }
-        setVideoFilterIndex(newFilter)
     }
     
-    func setColorFilterIndex(newFilter:Int) {
-        _currentColorFilter = newFilter
-        let shaderName = (_filters["Input"]?[newFilter]["Shader"] as? String) ?? "yuv_rgb"
-        let convolution:[Float32]
-        if let param = _filters["Input"]?[newFilter]["Convolution"] as? [NSNumber] where param.count == 9 {
-            convolution = param.map {Float32($0.floatValue)}
-        } else {
-            convolution = [1.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0]
+    func setColorFilter(_ newFilter:InputFilter)
+    {
+        if (_currentColorFilter.name != newFilter.name)
+        {
+            _currentColorFilter = newFilter
+            renderer.setColorFilter(newFilter)
+
+            showOverlayWithText(newFilter.name, andImageView: _colorImage)
+            saveDefaults()
         }
-        
-        renderer.setColorFilter(shaderName, convolution: convolution)
-        showOverlayWithText(colorFilter!, andImageView: _colorImage)
-        saveDefaults()
     }
-    
     func nextColorFilter() {
-        if let colorFilter = _filters["Input"] {
-            let newFilter = (_currentColorFilter + 1) % colorFilter.count
-            setColorFilterIndex(newFilter)
+        if let colorFilter = _filters.inputFilters.nextFilter() {
+            setColorFilter(colorFilter)
         }
     }
     
     func prevColorFilter() {
-        if let colorFilter = _filters["Input"] {
-            var newFilter = (_currentColorFilter - 1) % colorFilter.count
-            if newFilter < 0 {
-                newFilter += colorFilter.count
-            }
-            setColorFilterIndex(newFilter)
+        if let colorFilter = _filters.inputFilters.prevFilter() {
+            setColorFilter(colorFilter)
         }
     }
     
     // MARK: Delegate Members
     
-    var videoFilter:String? {
+    var videoFilter:String {
         get {
-            return _filters["Video"]?[_currentVideoFilter]["Name"] as? String
+            return _currentVideoFilter.name
         }
         set {
-            if let videoFilter = _filters["Video"] {
-                for (i, filter) in videoFilter.enumerate() {
-                    if let name = filter["Name"] as? String where name == newValue{
-                        setVideoFilterIndex(i)
-                        return;
-                    }
-                }
+            if let filter = _filters.videoFilters.getFilter(name: newValue)
+            {
+                setVideoFilter(filter)
             }
-            setVideoFilterIndex(0)
         }
     }
     
-    var colorFilter:String? {
+    var colorFilter:String {
         get {
-            return _filters["Input"]?[_currentColorFilter]["Name"] as? String
+            return _currentColorFilter.name
         }
         set {
-            if let colorFilters = _filters["Input"] {
-                for (i, filter) in colorFilters.enumerate() {
-                    if let name = filter["Name"] as? String where name == newValue {
-                        setColorFilterIndex(i)
-                        return;
-                    }
-                }
+            if let filter = _filters.inputFilters.getFilter(name: newValue)
+            {
+                setColorFilter(filter)
             }
-            setColorFilterIndex(0)
         }
     }
     
@@ -689,15 +665,15 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         didSet {
             print("Setting front camera: \(frontCamera)")
             camera.useFrontCamera = frontCamera
-            UIView.animateWithDuration(0.5) {
+            UIView.animate(withDuration: 0.5, animations: {
                 () -> Void in
                 if (self.frontCamera){
                     self._switchView.tintColor = self._buttonEnabledColor
 
                 } else {
-                    self._switchView.tintColor = UIColor.whiteColor()
+                    self._switchView.tintColor = UIColor.white
                 }
-            }
+            }) 
                 
             saveDefaults()
         }
@@ -710,8 +686,8 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
                 _uiTimer = nil
             } else {
                 if _settingsDelegate == nil && enableUI {
-                    _uiTimer = NSTimer(timeInterval: NSTimeInterval(2.0), target: self, selector: #selector(MainViewController.hideUI), userInfo: nil, repeats: false)
-                    NSRunLoop.currentRunLoop().addTimer(_uiTimer!, forMode: NSDefaultRunLoopMode)
+                    _uiTimer = Timer(timeInterval: TimeInterval(2.0), target: self, selector: #selector(MainViewController.hideUI), userInfo: nil, repeats: false)
+                    RunLoop.current.add(_uiTimer!, forMode: RunLoopMode.defaultRunLoopMode)
                 }
             }
             _settingsDelegate?.setAutoHide(autoHideUI)
@@ -721,9 +697,9 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
     
     // MARK: Gesture Recognizers
     
-    @IBAction func tapGestureRecognizer(sender: UITapGestureRecognizer) {
-        if sender.state == .Ended && !lock {
-            if _settingsView.hidden {
+    @IBAction func tapGestureRecognizer(_ sender: UITapGestureRecognizer) {
+        if sender.state == .ended && !lock {
+            if _settingsView.isHidden {
                 showUI()
             } else {
                 hideUI()
@@ -731,30 +707,30 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         }
     }
     
-    @IBAction func swipeGestureRecognizer(sender: UISwipeGestureRecognizer) {
-        if sender.state == .Ended && !lock {
+    @IBAction func swipeGestureRecognizer(_ sender: UISwipeGestureRecognizer) {
+        if sender.state == .ended && !lock {
             _swipeActions[sender.direction.rawValue]?()
         }
     }
-    @IBAction func longPressRecognizer(sender: UILongPressGestureRecognizer) {
-        if sender.state == UIGestureRecognizerState.Began {
+    @IBAction func longPressRecognizer(_ sender: UILongPressGestureRecognizer) {
+        if sender.state == UIGestureRecognizerState.began {
             lock = !lock
         }
     }
     
-    @IBAction func switchButton(sender: AnyObject) {
+    @IBAction func switchButton(_ sender: AnyObject) {
         if camera.supportsFrontCamera {
             frontCamera = !frontCamera
         }
     }
     
-    func popoverPresentationControllerShouldDismissPopover(popoverPresentationController: UIPopoverPresentationController) -> Bool {
+    func popoverPresentationControllerShouldDismissPopover(_ popoverPresentationController: UIPopoverPresentationController) -> Bool {
         if (_isiPad) {
             _settingsDelegate = nil
-            UIView.animateWithDuration(0.5) {
+            UIView.animate(withDuration: 0.5, animations: {
                 () -> Void in
-                self._settingsView.tintColor = UIColor.whiteColor()
-            }
+                self._settingsView.tintColor = UIColor.white
+            }) 
             saveDefaults()
             if lock {
                 hideUI()
@@ -765,8 +741,8 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         return true
     }
     
-    func adaptivePresentationStyleForPresentationController(controller: UIPresentationController) -> UIModalPresentationStyle {
-        return UIModalPresentationStyle.OverFullScreen
+    func adaptivePresentationStyle(for controller: UIPresentationController) -> UIModalPresentationStyle {
+        return UIModalPresentationStyle.overFullScreen
     }
 }
 
