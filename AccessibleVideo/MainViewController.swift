@@ -8,6 +8,7 @@
 
 import UIKit
 import Metal
+import MetalKit
 import QuartzCore
 import AVFoundation
 import CoreVideo
@@ -36,7 +37,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
     var renderer:FilterRenderer! = nil
     lazy var camera = CameraController()
     
-    var renderview: MetalView! = nil
+    var renderview: MTKView! = nil
     
     fileprivate var _filters = FilterModel(path:Bundle.main.path(forResource: "Filters", ofType: "plist")!)!
 
@@ -44,9 +45,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
     var _swipeActions = Dictionary<UInt, () -> ()> ()
     
     // MARK: Private properties
-    
-    fileprivate var _timer: CADisplayLink? = nil
-    
+        
     lazy fileprivate var _hud: MBProgressHUD! = MBProgressHUD()
     
     fileprivate var _lockedImage = UIImageView(image: UIImage(named: "Lock"))
@@ -113,10 +112,13 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         renderer = FilterRenderer(viewController: self)
         
         // cast view as MetalView type
-        renderview = view as! MetalView
+        renderview = view as! MTKView
         
         // set up the renderer and set the view delegate
         renderview.delegate = renderer
+        renderview.device = renderer.device
+        renderview.preferredFramesPerSecond = 60
+        renderview.framebufferOnly = true
         
         // set up the camera controller and set the delegate
         camera.delegate = renderer
@@ -324,33 +326,19 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
     // MARK: Render Loop
     
     func startRenderLoop() {
-        _timer = CADisplayLink(target: self, selector: #selector(MainViewController.render))
-        _timer?.frameInterval = 1
-        _timer?.add(to: RunLoop.main, forMode: RunLoopMode.defaultRunLoopMode)
         enableVideo(true)
 
     }
     
     func stopRenderLoop() {
         enableVideo(false)
-        _timer?.invalidate()
-        _timer = nil
+
     }
     
     func enableVideo(_ enable:Bool) {
         print("Video processing: \(enable)")
-        
         camera.running = enable
         UIApplication.shared.isIdleTimerDisabled = enable
-        
-        _timer?.isPaused = !enable
-        
-    }
-    
-    func render() {
-        autoreleasepool {
-            self.renderview.display()
-        }
     }
     
     // MARK: iCloud updating

@@ -1,9 +1,12 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="8121.17" systemVersion="15A178w" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="BYZ-38-t0r">
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11762" systemVersion="16D17a" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
     <dependencies>
-        <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="8101.14"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11757"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
         <!--Main View Controller-->
@@ -14,29 +17,26 @@
                         <viewControllerLayoutGuide type="top" id="y3c-jy-aDJ"/>
                         <viewControllerLayoutGuide type="bottom" id="wfy-db-euE"/>
                     </layoutGuides>
-                    <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC" userLabel="View" customClass="MetalView" customModule="AccessibleVideo" customModuleProvider="target">
-                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                    <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC" userLabel="View" customClass="MTKView">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <view opaque="NO" clearsContextBeforeDrawing="NO" contentMode="center" translatesAutoresizingMaskIntoConstraints="NO" id="Ntr-TK-QKm" userLabel="Hud View">
+                            <view opaque="NO" clearsContextBeforeDrawing="NO" contentMode="center" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Ntr-TK-QKm" userLabel="Hud View">
                                 <rect key="frame" x="150" y="150" width="300" height="300"/>
-                                <animations/>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="300" id="PpM-Yt-5x1"/>
                                     <constraint firstAttribute="height" constant="300" id="oBo-cr-4Hx"/>
                                 </constraints>
                             </view>
-                            <view opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="9qg-au-39x" userLabel="Switch View">
+                            <view opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="9qg-au-39x" userLabel="Switch View">
                                 <rect key="frame" x="540" y="0.0" width="60" height="60"/>
                                 <subviews>
                                     <imageView opaque="NO" clearsContextBeforeDrawing="NO" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Switch-Shadow" translatesAutoresizingMaskIntoConstraints="NO" id="osM-yv-I3z">
                                         <rect key="frame" x="0.0" y="0.0" width="60" height="60"/>
-                                        <animations/>
                                     </imageView>
                                     <button opaque="NO" clearsContextBeforeDrawing="NO" contentMode="center" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Coh-sR-sJl" userLabel="Switch">
                                         <rect key="frame" x="0.0" y="0.0" width="60" height="60"/>
-                                        <animations/>
                                         <state key="normal" image="Switch"/>
                                         <state key="selected" image="Switch"/>
                                         <connections>
@@ -44,7 +44,6 @@
                                         </connections>
                                     </button>
                                 </subviews>
-                                <animations/>
                                 <constraints>
                                     <constraint firstItem="osM-yv-I3z" firstAttribute="height" secondItem="9qg-au-39x" secondAttribute="height" id="4y8-09-phz"/>
                                     <constraint firstAttribute="width" constant="60" id="BIJ-2t-RxZ"/>
@@ -58,23 +57,20 @@
                                     <constraint firstAttribute="height" constant="60" id="lft-Lx-ngF"/>
                                 </constraints>
                             </view>
-                            <view opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="DCb-5q-9KH" userLabel="Settings View">
+                            <view opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="DCb-5q-9KH" userLabel="Settings View">
                                 <rect key="frame" x="540" y="540" width="60" height="60"/>
                                 <subviews>
                                     <imageView opaque="NO" clearsContextBeforeDrawing="NO" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Settings-Shadow" translatesAutoresizingMaskIntoConstraints="NO" id="aBS-fq-kxu" userLabel="Settings-Shadow">
                                         <rect key="frame" x="0.0" y="0.0" width="60" height="60"/>
-                                        <animations/>
                                     </imageView>
                                     <button opaque="NO" clearsContextBeforeDrawing="NO" contentMode="center" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xmU-bZ-lIu" userLabel="Settings">
                                         <rect key="frame" x="0.0" y="0.0" width="60" height="60"/>
-                                        <animations/>
                                         <state key="normal" image="Settings"/>
                                         <connections>
                                             <action selector="handleSettingsButton:" destination="BYZ-38-t0r" eventType="touchUpInside" id="x9J-v4-xTi"/>
                                         </connections>
                                     </button>
                                 </subviews>
-                                <animations/>
                                 <constraints>
                                     <constraint firstAttribute="centerX" secondItem="aBS-fq-kxu" secondAttribute="centerX" id="3Hd-ak-wuu"/>
                                     <constraint firstAttribute="centerX" secondItem="xmU-bZ-lIu" secondAttribute="centerX" id="6pa-er-QZb"/>
@@ -89,8 +85,7 @@
                                 </constraints>
                             </view>
                         </subviews>
-                        <animations/>
-                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
+                        <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <gestureRecognizers/>
                         <constraints>
                             <constraint firstAttribute="centerY" secondItem="Ntr-TK-QKm" secondAttribute="centerY" id="3Yi-NF-aoJ"/>
@@ -169,68 +164,61 @@
             <objects>
                 <viewController modalPresentationStyle="overFullScreen" id="k6S-qf-155" customClass="SettingsViewController" customModule="AccessibleVideo" customModuleProvider="target" sceneMemberID="viewController">
                     <visualEffectView key="view" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="wZY-ew-ynl">
-                        <rect key="frame" x="0.0" y="64" width="600" height="536"/>
+                        <rect key="frame" x="0.0" y="64" width="375" height="603"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="oSK-nU-Bke">
-                            <rect key="frame" x="0.0" y="0.0" width="600" height="536"/>
+                            <rect key="frame" x="0.0" y="0.0" width="375" height="603"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
-                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0ND-ww-YcB" userLabel="Noise Switch">
+                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0ND-ww-YcB" userLabel="Noise Switch">
                                     <rect key="frame" x="523" y="28" width="51" height="31"/>
-                                    <animations/>
                                     <connections>
                                         <action selector="handleBlur:" destination="k6S-qf-155" eventType="valueChanged" id="pgy-P5-FFz"/>
                                     </connections>
                                 </switch>
                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Reduce Noise" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ZtJ-yS-4Ra">
                                     <rect key="frame" x="28" y="33" width="108" height="21"/>
-                                    <animations/>
                                     <constraints>
                                         <constraint firstAttribute="height" constant="21" id="uwz-N8-ylp"/>
                                         <constraint firstAttribute="width" constant="108" id="wN6-lq-WrY"/>
                                     </constraints>
                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     <nil key="highlightedColor"/>
                                 </label>
-                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="hfg-dK-OVC" userLabel="Inverse Switch">
+                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="hfg-dK-OVC" userLabel="Inverse Switch">
                                     <rect key="frame" x="523" y="69" width="51" height="31"/>
-                                    <animations/>
                                     <connections>
                                         <action selector="handleInvertUI:" destination="k6S-qf-155" eventType="valueChanged" id="TVT-Ws-dvd"/>
                                     </connections>
                                 </switch>
                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Invert Screen" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nqJ-8O-Sfb">
                                     <rect key="frame" x="28" y="74" width="166" height="21"/>
-                                    <animations/>
                                     <constraints>
                                         <constraint firstAttribute="height" constant="21" id="Dsp-lS-1Pd"/>
                                         <constraint firstAttribute="width" constant="166" id="fVV-lc-cBy"/>
                                     </constraints>
                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     <nil key="highlightedColor"/>
                                 </label>
                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Automatically Hide UI" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Swg-bT-1EJ">
                                     <rect key="frame" x="28" y="115" width="166" height="21"/>
-                                    <animations/>
                                     <constraints>
                                         <constraint firstAttribute="width" constant="166" id="uRi-c7-vdI"/>
                                         <constraint firstAttribute="height" constant="21" id="vHQ-rK-f2W"/>
                                     </constraints>
                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     <nil key="highlightedColor"/>
                                 </label>
-                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Ie2-ME-2Fw" userLabel="UI Switch">
+                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Ie2-ME-2Fw" userLabel="UI Switch">
                                     <rect key="frame" x="523" y="110" width="51" height="31"/>
-                                    <animations/>
                                     <connections>
                                         <action selector="handleAutoHideUI:" destination="k6S-qf-155" eventType="valueChanged" id="Xdg-cc-3sV"/>
                                     </connections>
                                 </switch>
                             </subviews>
-                            <animations/>
                             <constraints>
                                 <constraint firstItem="0ND-ww-YcB" firstAttribute="top" secondItem="oSK-nU-Bke" secondAttribute="topMargin" constant="20" id="63q-cy-4MT"/>
                                 <constraint firstItem="nqJ-8O-Sfb" firstAttribute="top" secondItem="ZtJ-yS-4Ra" secondAttribute="bottom" constant="20" id="6Py-FU-RSE"/>
@@ -246,7 +234,6 @@
                                 <constraint firstItem="hfg-dK-OVC" firstAttribute="centerY" secondItem="nqJ-8O-Sfb" secondAttribute="centerY" id="yBb-au-tHG"/>
                             </constraints>
                         </view>
-                        <animations/>
                         <blurEffect style="extraLight"/>
                     </visualEffectView>
                     <extendedEdge key="edgesForExtendedLayout" bottom="YES"/>
@@ -272,66 +259,59 @@
                         <viewControllerLayoutGuide type="bottom" id="psh-T0-owv"/>
                     </layoutGuides>
                     <view key="view" opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="Z6H-E4-WtZ">
-                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" clearsContextBeforeDrawing="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Reduce Noise" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fUn-hH-2JD">
                                 <rect key="frame" x="20" y="89" width="108" height="21"/>
-                                <animations/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="108" id="m57-Fn-OGs"/>
                                     <constraint firstAttribute="height" constant="21" id="ral-eo-bwN"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <switch opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="kfL-NF-ABk" userLabel="Noise Switch">
+                            <switch opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="kfL-NF-ABk" userLabel="Noise Switch">
                                 <rect key="frame" x="511" y="84" width="51" height="31"/>
-                                <animations/>
                                 <connections>
                                     <action selector="handleBlur:" destination="jZA-of-eNf" eventType="valueChanged" id="Eiw-Fh-gdF"/>
                                 </connections>
                             </switch>
-                            <switch opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Y9B-qX-R5p" userLabel="Inverse Switch">
+                            <switch opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Y9B-qX-R5p" userLabel="Inverse Switch">
                                 <rect key="frame" x="511" y="125" width="51" height="31"/>
-                                <animations/>
                                 <connections>
                                     <action selector="handleInvertUI:" destination="jZA-of-eNf" eventType="valueChanged" id="PfL-l3-79B"/>
                                 </connections>
                             </switch>
                             <label opaque="NO" clearsContextBeforeDrawing="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Invert Screen" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UGP-3d-ehd">
                                 <rect key="frame" x="20" y="130" width="166" height="21"/>
-                                <animations/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="21" id="Lj0-24-rOJ"/>
                                     <constraint firstAttribute="width" constant="166" id="sqQ-lO-BQr"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" clearsContextBeforeDrawing="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Automatically Hide UI" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fg5-9B-WzJ">
                                 <rect key="frame" x="20" y="171" width="166" height="21"/>
-                                <animations/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="21" id="l0W-Cm-mPY"/>
                                     <constraint firstAttribute="width" constant="166" id="xHb-S3-Kzo"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <switch opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Ups-o7-AxK" userLabel="UI Switch">
+                            <switch opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Ups-o7-AxK" userLabel="UI Switch">
                                 <rect key="frame" x="511" y="166" width="51" height="31"/>
-                                <animations/>
                                 <connections>
                                     <action selector="handleAutoHideUI:" destination="jZA-of-eNf" eventType="valueChanged" id="hqG-yh-suH"/>
                                 </connections>
                             </switch>
                         </subviews>
-                        <animations/>
-                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="Y9B-qX-R5p" firstAttribute="trailing" secondItem="Ups-o7-AxK" secondAttribute="trailing" id="3ka-FM-tAY"/>
                             <constraint firstItem="kfL-NF-ABk" firstAttribute="trailing" secondItem="Y9B-qX-R5p" secondAttribute="trailing" id="50l-Iw-AB2"/>
@@ -368,7 +348,6 @@
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="qgh-j1-1uh">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <animations/>
                     </navigationBar>
                     <nil name="viewControllers"/>
                     <connections>
@@ -387,7 +366,6 @@
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="Alm-cF-RUH">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <animations/>
                     </navigationBar>
                     <nil name="viewControllers"/>
                     <connections>

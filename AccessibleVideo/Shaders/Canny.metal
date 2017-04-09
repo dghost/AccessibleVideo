@@ -160,18 +160,18 @@ fragment half4 CannyThresholdComposite(FILTER_SHADER_ARGS)
 fragment half4 CannyComic(FILTER_SHADER_ARGS)
 {
     // parameters that define the comic effect
-#define LINE_SLOPE -0.9h
-#define LINE_INTERVAL 10.0h
-#define LINE_STRENGTH 1.0h
+#define LINE_SLOPE -0.8h
+#define LINE_INTERVAL 30.0h
+#define LINE_STRENGTH 2.0h
 #define BLACK_THRESHOLD 0.2h
-#define WHITE_THRESHOLD 0.45h
-    half highThreshold = HIGH_THRESHOLD;
+#define WHITE_THRESHOLD 0.6h
+    half highThreshold = HIGH_THRESHOLD * 2.0   ;
     
     bool result = false;
     half m22 = lastStage.sample(bilinear, inFrag.m_TexCoord).r;
     half3 color;
 
-    if (m22 >= highThreshold )
+    if (m22 >= highThreshold)
     {
         result = true;
     } else if (m22 >= LOW_THRESHOLD){

@@ -9,6 +9,7 @@
 import Foundation
 import CoreVideo
 import Metal
+import MetalKit
 import AVFoundation
 import UIKit
 
@@ -20,12 +21,10 @@ protocol RendererControlDelegate {
     var highQuality:Bool { get }
 }
 
-class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlDelegate {
-    
+class FilterRenderer: NSObject, MTKViewDelegate, CameraCaptureDelegate, RendererControlDelegate {
     var device:MTLDevice! {
         return _device
     }
-    
     
     var applyBlur:Bool = false
     
@@ -59,14 +58,14 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
         }
     }
     
-    fileprivate var _blurPipelineStates = [MTLRenderPipelineState]()
+    fileprivate var _blurPipelineStates:ContiguousArray<MTLRenderPipelineState?> = [nil,nil]
     fileprivate var _screenBlitState:MTLRenderPipelineState! = nil
     fileprivate var _screenInvertState:MTLRenderPipelineState! = nil
     
     fileprivate var _commandQueue: MTLCommandQueue! = nil
     
-    fileprivate var _intermediateTextures = [MTLTexture]()
-    fileprivate var _intermediateRenderPassDescriptor = [MTLRenderPassDescriptor]()
+    fileprivate var _intermediateTextures:ContiguousArray<MTLTexture?> = [nil,nil]
+    fileprivate var _intermediateRenderPassDescriptor:ContiguousArray<MTLRenderPassDescriptor?> = [nil,nil]
 
     
     fileprivate var _rgbTexture:MTLTexture! = nil
@@ -86,7 +85,9 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
         return (_currentSourceTexture + 1) % 2
     }
     
-    fileprivate var _numberBufferedFrames:Int = 3
+    fileprivate var _yuvTextures:ContiguousArray<MTLTexture?> = [nil, nil]
+
+    fileprivate var _numberBufferedFrames:Int = 2
     fileprivate var _numberShaderBuffers:Int {
         return _numberBufferedFrames + 1
     }
@@ -103,7 +104,7 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
 
     fileprivate var _shaderArguments = [String : MTLRenderPipelineReflection]()
     
-    fileprivate var _samplerStates = [MTLSamplerState]()
+    fileprivate var _samplerStates:ContiguousArray<MTLSamplerState?> = [nil, nil]
     
     fileprivate var _currentVideoFilterUsesBlur = true
     fileprivate var _currentVideoFilter = [MTLRenderPipelineState]()
@@ -114,6 +115,7 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
     fileprivate var _viewport:MTLViewport = MTLViewport()
     
     init(viewController:UIViewController!) {
+        super.init()
         _controller = viewController
         setupRenderer()
     }
@@ -233,14 +235,18 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
         if _device!.supportsFeatureSet(.iOS_GPUFamily2_v1) {
             print("Using high quality blur...")
             highQuality = true
-            _blurPipelineStates = ["BlurX_HQ", "BlurY_HQ"].map {self.cachedPipelineStateFor($0)!}
+            _blurPipelineStates[0] = self.cachedPipelineStateFor("BlurX_HQ")!
+            _blurPipelineStates[1] = self.cachedPipelineStateFor("BlurY_HQ")!
+            
             let fragmentArgs = (_shaderArguments["BlurX_HQ"]!.fragmentArguments!).filter({$0.name == "blurParameters"})
             if fragmentArgs.count == 1 {
                 _blurArgs = MetalBufferArray<BlurBuffer>(arguments: fragmentArgs[0], count: _numberShaderBuffers)
             }
         } else {
             highQuality = false
-            _blurPipelineStates = ["BlurX", "BlurY"].map {self.cachedPipelineStateFor($0)!}
+            _blurPipelineStates[0] = self.cachedPipelineStateFor("BlurX")!
+            _blurPipelineStates[1] = self.cachedPipelineStateFor("BlurY")!
+
             let fragmentArgs = (_shaderArguments["BlurX"]!.fragmentArguments!).filter({$0.name == "blurParameters"})
             if fragmentArgs.count == 1 {
                 _blurArgs = MetalBufferArray<BlurBuffer>(arguments: fragmentArgs[0], count: _numberShaderBuffers)
@@ -252,15 +258,15 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
         
         let nearest = MTLSamplerDescriptor()
         nearest.label = "nearest"
+        _samplerStates[0] = self._device!.makeSamplerState(descriptor:nearest)
         
         let bilinear = MTLSamplerDescriptor()
         bilinear.label = "bilinear"
         bilinear.minFilter = .linear
         bilinear.magFilter = .linear
-        _samplerStates = [nearest, bilinear].map {self._device!.makeSamplerState(descriptor: $0)}
-
-
+        _samplerStates[1] = self._device!.makeSamplerState(descriptor:bilinear)
         
+
         // create the command queue
         _commandQueue = _device!.makeCommandQueue()
     }
@@ -317,42 +323,87 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
         return pipeline
     }
     
-    // create generic render pass
-    func createRenderPass(_ commandBuffer: MTLCommandBuffer!,
-        pipeline:MTLRenderPipelineState!,
-        vertexIndex:Int, fragmentBuffers:[(MTLBuffer,Int)],
-        sourceTextures:[MTLTexture],
-        descriptor: MTLRenderPassDescriptor!,
-        viewport:MTLViewport?) {
-            let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: descriptor)
-            
-            let name:String = pipeline.label ?? "Unnamed Render Pass"
-            renderEncoder.pushDebugGroup(name)
-            renderEncoder.label = name
-            if let view = viewport {
-                renderEncoder.setViewport(view)
-            }
-            renderEncoder.setRenderPipelineState(pipeline)
-            
-            renderEncoder.setVertexBuffer(_vertexBuffer, offset: 0, at: 0)
-            
-            for (index,(buffer, offset)) in fragmentBuffers.enumerated() {
-                renderEncoder.setFragmentBuffer(buffer, offset: offset, at: index)
-            }
-            for (index,texture) in sourceTextures.enumerated() {
-                renderEncoder.setFragmentTexture(texture, at: index)
-            }
-            for (index,samplerState) in _samplerStates.enumerated() {
-                renderEncoder.setFragmentSamplerState(samplerState, at: index)
-            }
-            
-            renderEncoder.drawPrimitives(type: .triangle, vertexStart: vertexIndex, vertexCount: 6, instanceCount: 1)
-            renderEncoder.popDebugGroup()
-            renderEncoder.endEncoding()
+    struct RenderPass {
+        var descriptor:MTLRenderPassDescriptor
+        var pipeline:MTLRenderPipelineState
+        var vertexIndex:Int
+        var fragmentBuffers:[(MTLBuffer,Int)]
+        var sourceTextures:ContiguousArray<MTLTexture?>
+        var viewport:MTLViewport?
     }
+    
+    func encodeRenderPass(_ commandBuffer: MTLCommandBuffer!, renderPass: RenderPass) {
+        let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPass.descriptor)
+        
+        let name:String = renderPass.pipeline.label ?? "Unnamed Render Pass"
+        renderEncoder.pushDebugGroup(name)
+        renderEncoder.label = name
+        if let view = renderPass.viewport {
+            renderEncoder.setViewport(view)
+        }
+        renderEncoder.setRenderPipelineState(renderPass.pipeline)
+        
+        renderEncoder.setVertexBuffer(_vertexBuffer, offset: 0, at: 0)
+        
+        for (index,(buffer, offset)) in renderPass.fragmentBuffers.enumerated() {
+            renderEncoder.setFragmentBuffer(buffer, offset: offset, at: index)
+        }
+        
+        renderPass.sourceTextures.withUnsafeBufferPointer() { buffer in
+            let range = NSMakeRange(0, buffer.count)
+            if let base = buffer.baseAddress {
+                renderEncoder.setFragmentTextures(base, with: range)
+            }
+        }
+        
+        _samplerStates.withUnsafeBufferPointer() { buffer in
+            let range = NSMakeRange(0, buffer.count)
+            if let base = buffer.baseAddress {
+                renderEncoder.setFragmentSamplerStates(base, with: range)
+            }
+        }
+        
+        renderEncoder.drawPrimitives(type: .triangle, vertexStart: renderPass.vertexIndex, vertexCount: 6, instanceCount: 1)
+        renderEncoder.popDebugGroup()
+        renderEncoder.endEncoding()
+    }
+    
+    public func commitRenderPass(_ renderPass:RenderPass, closure: ((MTLCommandBuffer) -> ())? = nil)
+    {
 
-    func render(_ view: MetalView) {
+        let commandBuffer = _commandQueue.makeCommandBuffer()
+        
+        encodeRenderPass(commandBuffer, renderPass: renderPass)
+        
+        // commit buffers to GPU
+        if let cl = closure {
+            cl(commandBuffer)
+        }
+        
+        commandBuffer.commit()
+    }
+    
+    public func commitRenderPasses(_ renderPasses:[RenderPass], closure: ((MTLCommandBuffer) -> ())? = nil)
+    {
+        guard renderPasses.count > 0 else {
+            return
+        }
 
+        let commandBuffer = _commandQueue.makeCommandBuffer()
+        
+        for pass in renderPasses {
+            encodeRenderPass(commandBuffer, renderPass: pass)
+        }
+        
+        // commit buffers to GPU
+        if let cl = closure {
+            cl(commandBuffer)
+        }
+        
+        commandBuffer.commit()
+    }
+    
+    public func draw(in view: MTKView) {
         let currentOrientation:UIInterfaceOrientation = _isiPad ? UIApplication.shared.statusBarOrientation : .portrait
         
         guard let currentOffset = _vertexStart[currentOrientation], _rgbTexture != nil else {
@@ -361,81 +412,104 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
         
         _renderSemaphore.wait(timeout: DispatchTime.distantFuture)
 
-        let commandBuffer = _commandQueue.makeCommandBuffer()
+        var yuvTextures:ContiguousArray<MTLTexture?>! = nil
+        
+        synced(lock: _textureCache!) {
+            yuvTextures = _yuvTextures
+        }
 
-        var sourceTexture:MTLTexture = _rgbTexture
-        var destDescriptor:MTLRenderPassDescriptor = _intermediateRenderPassDescriptor[_currentDestTexture]
+        
+        commitRenderPass(
+            RenderPass(descriptor: _rgbDescriptor, pipeline: _currentColorFilter, vertexIndex: 0, fragmentBuffers:  [_colorArgs.bufferAndOffsetForElement(_currentColorBuffer)], sourceTextures: yuvTextures, viewport: nil)
+        )
+        
+        
+
+        var blurTex = _rgbTexture!
+        
+        if applyBlur && _currentVideoFilterUsesBlur, let args = _blurArgs {
+            var inputProcessPasses:[RenderPass] = []
+
+            let parameters = [_blurArgs.bufferAndOffsetForElement(_currentBlurBuffer)]
+
+            
+            inputProcessPasses.append(
+                RenderPass(descriptor: _intermediateRenderPassDescriptor[self._currentSourceTexture]!,
+                           pipeline:  _blurPipelineStates[0]!,
+                           vertexIndex: 0,
+                           fragmentBuffers: parameters,
+                           sourceTextures: [_rgbTexture],
+                           viewport: nil))
+            
+            inputProcessPasses.append(
+                RenderPass(descriptor: _blurDescriptor,
+                           pipeline:  _blurPipelineStates[1]!,
+                           vertexIndex: 0,
+                           fragmentBuffers: parameters,
+                           sourceTextures: [_intermediateTextures[self._currentSourceTexture]],
+                           viewport: nil))
+            blurTex = _blurTexture
+            
+            commitRenderPasses(inputProcessPasses)
+        }
+
+
+        var sourceTextures:ContiguousArray<MTLTexture?> = [_rgbTexture, blurTex, _rgbTexture]
+        var destDescriptor:MTLRenderPassDescriptor = _intermediateRenderPassDescriptor[_currentDestTexture]!
+        var sourceTextureSets:[ContiguousArray<MTLTexture?>] = [
+            [self._intermediateTextures[0]!, blurTex, _rgbTexture],
+            [self._intermediateTextures[1]!, blurTex, _rgbTexture]
+        ]
+        
         
         func swapTextures() {
             self._currentSourceTexture += 1
-            sourceTexture = self._intermediateTextures[self._currentSourceTexture]
-            destDescriptor = self._intermediateRenderPassDescriptor[self._currentDestTexture]
+            sourceTextures = sourceTextureSets[self._currentSourceTexture]
+            destDescriptor = self._intermediateRenderPassDescriptor[self._currentDestTexture]!
         }
-        
-        var blurTex = _rgbTexture
-        
-        if applyBlur && _currentVideoFilterUsesBlur, let args = _blurArgs {
-            let parameters = [args.bufferAndOffsetForElement(_currentBlurBuffer)]
-            createRenderPass(commandBuffer,
-                pipeline:  _blurPipelineStates[0],
-                vertexIndex: 0,
-                fragmentBuffers: parameters,
-                sourceTextures: [_rgbTexture],
-                descriptor: _intermediateRenderPassDescriptor[0],
-                viewport: nil)
-            
-            createRenderPass(commandBuffer,
-                pipeline:  _blurPipelineStates[1],
-                vertexIndex: 0,
-                fragmentBuffers: parameters,
-                sourceTextures: [_intermediateTextures[0]],
-                descriptor: _blurDescriptor,
-                viewport: nil)
-            blurTex = _blurTexture
-        }
-        
         
         // apply all render passes in the current filter
         let filterParameters = [_filterArgs.bufferAndOffsetForElement(_currentFilterBuffer)]
-        for (_, filter) in _currentVideoFilter.enumerated() {
-            createRenderPass(commandBuffer,
-                pipeline: filter,
-                vertexIndex: 0,
-                fragmentBuffers: filterParameters,
-                sourceTextures: [sourceTexture, blurTex!, _rgbTexture],
-                descriptor: destDescriptor,
-                viewport: nil)
-            
+
+        let filterPasses:[RenderPass] = _currentVideoFilter.map()
+        {
+            (filter:MTLRenderPipelineState) -> (RenderPass) in
+            let pass = RenderPass(descriptor: destDescriptor,
+                                  pipeline: filter,
+                                  vertexIndex: 0,
+                                  fragmentBuffers: filterParameters,
+                                  sourceTextures: sourceTextures,
+                                  viewport: nil)
             swapTextures()
+            return pass
         }
         
-        
-        if let screenDescriptor = view.renderPassDescriptor {
+        commitRenderPasses(filterPasses)
+
+        if let screenDescriptor = view.currentRenderPassDescriptor,
+            let currentDrawable = view.currentDrawable {
             
-            createRenderPass(commandBuffer,
-                pipeline: invertScreen ? _screenInvertState! : _screenBlitState!,
-                vertexIndex: currentOffset,
-                fragmentBuffers: filterParameters,
-                sourceTextures: [sourceTexture, blurTex!, _rgbTexture],
-                descriptor: screenDescriptor,
-                viewport: self._viewport)
-            
+            let renderPass = RenderPass(descriptor: screenDescriptor,
+                                        pipeline: invertScreen ? _screenInvertState! : _screenBlitState!,
+                                        vertexIndex: currentOffset,
+                                        fragmentBuffers: filterParameters,
+                                        sourceTextures: sourceTextures,
+                                        viewport: self._viewport)
             swapTextures()
-            
+
+            commitRenderPass(renderPass) {
+                commandBuffer in
+                commandBuffer.addCompletedHandler() {
+                    _ in
+                    self._renderSemaphore.signal()
+                }
+                commandBuffer.present(currentDrawable)
+            }
         }
 
-        // commit buffers to GPU
-        commandBuffer.addCompletedHandler() {
-            (cmdb:MTLCommandBuffer!) in
-            self._renderSemaphore.signal()
-            return
-        }
-        
-        commandBuffer.present(view.currentDrawable!)
-        commandBuffer.commit()
     }
     
-    func resize(_ size: CGSize) {
+    public func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
         if _rgbTexture != nil {
             let iWidth = Double(_rgbTexture.width)
             let iHeight = Double(_rgbTexture.height)
@@ -523,14 +597,15 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
             descriptor.usage = [.renderTarget, .shaderRead]
         }
         
-        
-        _intermediateTextures = [descriptor,descriptor].map { self._device!.makeTexture(descriptor: $0) }
-        _intermediateRenderPassDescriptor = _intermediateTextures.map {
+        for i in 0...1 {
+            let texture = self._device!.makeTexture(descriptor: descriptor)
             let renderDescriptor = MTLRenderPassDescriptor()
-            renderDescriptor.colorAttachments[0].texture = $0
+            renderDescriptor.colorAttachments[0].texture = texture
             renderDescriptor.colorAttachments[0].loadAction = .dontCare
             renderDescriptor.colorAttachments[0].storeAction = .store
-            return renderDescriptor
+            
+            _intermediateTextures[i] = texture
+            _intermediateRenderPassDescriptor[i] = renderDescriptor
         }
         
         _rgbTexture = _device!.makeTexture(descriptor: descriptor)
@@ -555,32 +630,23 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
             var y_texture: CVMetalTexture? = nil
             let y_width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 0)
             let y_height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 0)
-            CVMetalTextureCacheCreateTextureFromImage(kCFAllocatorDefault, tc, pixelBuffer, nil, MTLPixelFormat.r8Unorm, y_width, y_height, 0, &y_texture)
+
             
             var uv_texture: CVMetalTexture? = nil
             let uv_width = CVPixelBufferGetWidthOfPlane(pixelBuffer, 1)
             let uv_height = CVPixelBufferGetHeightOfPlane(pixelBuffer, 1)
-            CVMetalTextureCacheCreateTextureFromImage(kCFAllocatorDefault, tc, pixelBuffer, nil, MTLPixelFormat.rg8Unorm, uv_width, uv_height, 1, &uv_texture)
-            
-            let luma = CVMetalTextureGetTexture(y_texture!)!
-            let chroma = CVMetalTextureGetTexture(uv_texture!)!
-            
-            let yuvTextures:[MTLTexture] = [ luma, chroma ]
-            
-            let commandBuffer = _commandQueue.makeCommandBuffer()
 
-            // create the YUV->RGB pass
-            createRenderPass(commandBuffer,
-                pipeline: _currentColorFilter,
-                vertexIndex: 0,
-                fragmentBuffers: [_colorArgs.bufferAndOffsetForElement(_currentColorBuffer)],
-                sourceTextures: yuvTextures,
-                descriptor: _rgbDescriptor,
-                viewport: nil)
             
-            commandBuffer.commit()
+            synced(lock: tc) {
+                CVMetalTextureCacheFlush(tc, 0)
 
-            CVMetalTextureCacheFlush(tc, 0)
+                CVMetalTextureCacheCreateTextureFromImage(kCFAllocatorDefault, tc, pixelBuffer, nil, MTLPixelFormat.r8Unorm, y_width, y_height, 0, &y_texture)
+                CVMetalTextureCacheCreateTextureFromImage(kCFAllocatorDefault, tc, pixelBuffer, nil, MTLPixelFormat.rg8Unorm, uv_width, uv_height, 1, &uv_texture)
+                
+                let luma = CVMetalTextureGetTexture(y_texture!)!
+                let chroma = CVMetalTextureGetTexture(uv_texture!)!
+                _yuvTextures = [ luma, chroma ]
+            }
         }
     }
     
@@ -602,17 +668,19 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
         let texelHeight = 1.0 / Float32(_rgbTexture.height)
         
         currentBuffer.xOffsets = (
-            (offsets[0] * texelWidth, 0),
-            (offsets[1] * texelWidth, 0),
-            (offsets[2] * texelWidth, 0)
+            Offset(x: offsets[0] * texelWidth, y: 0),
+            Offset(x: offsets[1] * texelWidth, y: 0),
+            Offset(x: offsets[2] * texelWidth, y: 0)
         )
         
         currentBuffer.yOffsets = (
-            (0, offsets[0] * texelHeight),
-            (0, offsets[1] * texelHeight),
-            (0, offsets[2] * texelHeight)
+            Offset(x: 0, y: offsets[0] * texelHeight),
+            Offset(x: 0, y: offsets[1] * texelHeight),
+            Offset(x: 0, y: offsets[2] * texelHeight)
         )
         _currentBlurBuffer += 1
+        
+        
     }
     
     func setFilterBuffer() {
@@ -637,13 +705,13 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
         }
     }
     
-    var primaryColor:UIColor = UIColor(red: 0.0, green: 1.0, blue: 1.0, alpha: 0.75) {
+    var primaryColor:UIColor = UIColor(red: 0.0, green: 0.8, blue: 1.0, alpha: 0.75) {
         didSet {
             setFilterBuffer()
         }
     }
     
-    var secondaryColor:UIColor = UIColor(red: 1.0, green: 0.0, blue: 1.0, alpha: 0.75){
+    var secondaryColor:UIColor = UIColor(red: 0.6, green: 0.0, blue: 1.0, alpha: 0.75){
         didSet {
             setFilterBuffer()
         }
@@ -654,5 +722,10 @@ class FilterRenderer: MetalViewDelegate, CameraCaptureDelegate, RendererControlD
             setFilterBuffer()
         }
     }
-
+    
+    func synced(lock: AnyObject, closure: () -> ()) {
+        objc_sync_enter(lock)
+        closure()
+        objc_sync_exit(lock)
+    }
 }

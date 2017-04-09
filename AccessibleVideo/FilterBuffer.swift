@@ -7,15 +7,15 @@
 //
 
 class FilterBuffer:MetalBuffer {
-    fileprivate var _lowThreshold:UnsafeMutablePointer<Float32>! = nil
-    fileprivate var _highThreshold:UnsafeMutablePointer<Float32>! = nil
+    fileprivate var _params:UnsafeMutablePointer<FilterParameters>! = nil
     
     override func setContents(_ arguments: MTLArgument) {
         if arguments.name == "filterParameters" {
             primaryColor = nil
             secondaryColor = nil
-            _lowThreshold = nil
-            _highThreshold = nil
+            
+            assert(arguments.bufferDataSize == MemoryLayout<FilterParameters>.size)
+            _params = _filterBufferData.assumingMemoryBound(to: FilterParameters.self)
             
             let parameters = arguments.bufferStructType.members as [MTLStructMember]
             for parameter in parameters {
@@ -30,10 +30,8 @@ class FilterBuffer:MetalBuffer {
                     secondaryColor = Color(buffer: pointer.assumingMemoryBound(to: UInt8.self))
                     break;
                 case "lowThreshold":
-                    _lowThreshold = pointer.assumingMemoryBound(to: Float32.self)
                     break;
                 case "highThreshold":
-                    _highThreshold = pointer.assumingMemoryBound(to: Float32.self)
                     break;
                 default:
                     print("Error: unknown parameter")
@@ -42,26 +40,24 @@ class FilterBuffer:MetalBuffer {
             }
         }
     }
-
-    
     var primaryColor:Color! = nil
     var secondaryColor:Color! = nil
     
     var lowThreshold:Float32 {
         get {
-            return _lowThreshold[0]
+            return _params[0].lowThreshold
         }
         set {
-            _lowThreshold[0] = newValue
+            _params[0].lowThreshold = newValue
         }
     }
     
     var highThreshold:Float32 {
         get {
-            return _highThreshold[0]
+            return _params[0].highThreshold
         }
         set {
-            _highThreshold[0] = newValue
+            _params[0].highThreshold = newValue
         }
     }
 }

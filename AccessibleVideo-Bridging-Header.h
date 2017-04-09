@@ -3,3 +3,4 @@
 //
 
 #import "MBProgressHUD.h"
+#import "ShaderStructs.h"

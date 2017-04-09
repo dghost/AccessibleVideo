@@ -276,11 +276,11 @@ class CameraController:NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     
     var supportedResolutions:[CGSize?] {
         get {
-            let formatsAndResolutions = (_captureDevice!.formats as! [AVCaptureDeviceFormat]).map {
+            let formatsAndResolutions = (_captureDevice!.formats as! [AVCaptureDeviceFormat]).lazy.map {
                 return ($0, CMVideoFormatDescriptionGetDimensions($0.formatDescription))
             }
             
-            let filtered = formatsAndResolutions.filter {
+            let filtered = formatsAndResolutions.lazy.filter {
                 let format = $0.0
                 let resolution = $0.1
                 let formatCode = str4(Int(CMFormatDescriptionGetMediaSubType(format.formatDescription)))

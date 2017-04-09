@@ -11,6 +11,8 @@ import UIKit
 import Metal
 import QuartzCore
 
+import MetalKit
+
 protocol MetalViewDelegate {
     func render(_ view:MetalView)
     func resize(_ size:CGSize)

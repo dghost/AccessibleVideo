@@ -53,6 +53,7 @@
 		DFAF7A0919FFFC1800ED5B76 /* AccessibleVideo-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AccessibleVideo-Bridging-Header.h"; sourceTree = "<group>"; };
 		DFAF7A0A19FFFC1800ED5B76 /* MBProgressHUD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MBProgressHUD.h; path = MBProgressHUD/MBProgressHUD.h; sourceTree = "<group>"; };
 		DFAF7A0B19FFFC1800ED5B76 /* MBProgressHUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MBProgressHUD.m; path = MBProgressHUD/MBProgressHUD.m; sourceTree = "<group>"; };
+		DFB826CC1E1648A20045B4DD /* ShaderStructs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ShaderStructs.h; path = Shaders/ShaderStructs.h; sourceTree = "<group>"; };
 		DFC4CFEA1A3A1ACE00964650 /* Colorblind.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; name = Colorblind.metal; path = Shaders/Colorblind.metal; sourceTree = "<group>"; };
 		DFC4CFEC1A3A1B6D00964650 /* Common.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; name = Common.metal; path = Shaders/Common.metal; sourceTree = "<group>"; };
 		DFD2200519C643BC00913975 /* AccessibleVideo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AccessibleVideo.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -89,6 +90,7 @@
 		DF6A115119C8092600D20618 /* Shaders */ = {
 			isa = PBXGroup;
 			children = (
+				DFB826CC1E1648A20045B4DD /* ShaderStructs.h */,
 				DF6A114F19C8091C00D20618 /* Base.metal */,
 				DF048B2119E3CC9000064E81 /* Shaders.plist */,
 				DF048B2519E3F4CE00064E81 /* Sobel.metal */,
@@ -405,6 +407,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DEVELOPMENT_TEAM = G8X4XMPVS9;
 				INFOPLIST_FILE = AccessibleVideo/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_SWIFT_FLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.doomsdaytech.$(PRODUCT_NAME:rfc1034identifier)";
@@ -427,6 +430,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DEVELOPMENT_TEAM = G8X4XMPVS9;
 				INFOPLIST_FILE = AccessibleVideo/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_SWIFT_FLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.doomsdaytech.$(PRODUCT_NAME:rfc1034identifier)";

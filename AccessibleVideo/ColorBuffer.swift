@@ -8,40 +8,31 @@
 
 
 class ColorBuffer:MetalBuffer {
-    var yuvToRGB:Matrix3x3! = nil
+    fileprivate var _params:UnsafeMutablePointer<ColorParameters>! = nil
     
     override func setContents(_ arguments: MTLArgument) {
         if arguments.name == "colorParameters" {
-            yuvToRGB = nil
-            
-            let parameters = arguments.bufferStructType.members as [MTLStructMember]
-            for parameter in parameters {
-                print("Found parameter \(parameter.name) at offset \(parameter.offset)")
-                let pointer = _filterBufferData.advanced(by: parameter.offset)
-                
-                switch(parameter.name) {
-                case "yuvToRGB":
-                    yuvToRGB = Matrix3x3(buffer: pointer.assumingMemoryBound(to: Float32.self))
-                    break;
-                default:
-                    print("Error: unknown parameter")
-                    break;
-                }
-            }
+            assert(arguments.bufferDataSize == MemoryLayout<ColorParameters>.size)
+            _params = _filterBufferData.assumingMemoryBound(to: ColorParameters.self)
         }
     }
     
     func setConvolution(_ newConvolution:[Float32]) {
+        
         if newConvolution.count == 9 {
-            yuvToRGB.set(
+            _params[0].yuvToRGB =
                 (
-                    (newConvolution[0], newConvolution[1], newConvolution[2]),
-                    (newConvolution[3], newConvolution[4], newConvolution[5]),
-                    (newConvolution[6], newConvolution[7], newConvolution[8])
+                    (newConvolution[0], newConvolution[3], newConvolution[6], 0),
+                    (newConvolution[1], newConvolution[4], newConvolution[7], 0),
+                    (newConvolution[2], newConvolution[5], newConvolution[8], 0)
                 )
+         } else {
+            _params[0].yuvToRGB =
+                (
+                    (1, 0, 0, 0),
+                    (0, 1, 0, 0),
+                    (0, 0, 1, 0)
             )
-        } else {
-            yuvToRGB.clearIdentity()
         }
     }
 }
