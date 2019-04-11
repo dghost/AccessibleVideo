@@ -20,18 +20,17 @@ class ColorBuffer:MetalBuffer {
     func setConvolution(_ newConvolution:[Float32]) {
         
         if newConvolution.count == 9 {
-            _params[0].yuvToRGB =
-                (
-                    (newConvolution[0], newConvolution[3], newConvolution[6], 0),
-                    (newConvolution[1], newConvolution[4], newConvolution[7], 0),
-                    (newConvolution[2], newConvolution[5], newConvolution[8], 0)
+            _params[0].yuvToRGB = float3x3(
+                    float3(newConvolution[0], newConvolution[3], newConvolution[6]),
+                    float3(newConvolution[1], newConvolution[4], newConvolution[7]),
+                    float3(newConvolution[2], newConvolution[5], newConvolution[8])
                 )
          } else {
             _params[0].yuvToRGB =
-                (
-                    (1, 0, 0, 0),
-                    (0, 1, 0, 0),
-                    (0, 0, 1, 0)
+                float3x3(
+                    float3(1, 0, 0),
+                    float3(0, 1, 0),
+                    float3(0, 0, 1)
             )
         }
     }

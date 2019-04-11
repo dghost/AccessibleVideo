@@ -16,7 +16,7 @@ class BlurBuffer:MetalBuffer {
         }
     }
     
-    var xOffsets:(Offset, Offset, Offset) {
+    var xOffsets:(float2, float2, float2) {
         get {
             return _params[0].xOffsets
         }
@@ -25,7 +25,7 @@ class BlurBuffer:MetalBuffer {
         }
     }
     
-    var yOffsets:(Offset,Offset,Offset) {
+    var yOffsets:(float2,float2,float2) {
         get {
             return _params[0].yOffsets
         }

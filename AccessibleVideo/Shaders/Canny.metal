@@ -87,10 +87,10 @@ fragment half4 CannyMagnitude(FILTER_SHADER_ARGS_LAST_ONLY)
 
 fragment half4 CannyThreshold(FILTER_SHADER_ARGS_LAST_ONLY)
 {
-    half m22 = lastStage.sample(bilinear, inFrag.m_TexCoord).r;
+    const half m22 = lastStage.sample(bilinear, inFrag.m_TexCoord).r;
     half4 color = half4(half3(0.0),1.0);
 
-    half highThreshold = HIGH_THRESHOLD;
+    const half highThreshold = HIGH_THRESHOLD;
     
     if (m22 >= highThreshold )
     {
@@ -119,15 +119,15 @@ fragment half4 CannyThreshold(FILTER_SHADER_ARGS_LAST_ONLY)
 
 fragment half4 CannyThresholdComposite(FILTER_SHADER_ARGS)
 {
-    half highThreshold = HIGH_THRESHOLD;
+    const half highThreshold = HIGH_THRESHOLD;
     
-    half m22 = lastStage.sample(bilinear, inFrag.m_TexCoord).r;
+        const half m22 = lastStage.sample(bilinear, inFrag.m_TexCoord).r;
     
     half3 color = originalFrame.sample(bilinear, inFrag.m_TexCoord).rgb;
 
     if (m22 >= highThreshold )
     {
-        half4 blendColor = PRIMARY_COLOR;
+        const half4 blendColor = PRIMARY_COLOR;
         color *= (1.0 - blendColor.a);
         color += (blendColor.rgb * blendColor.a);
     } else if (m22 >= LOW_THRESHOLD){
@@ -144,11 +144,11 @@ fragment half4 CannyThresholdComposite(FILTER_SHADER_ARGS)
             (m21 >= highThreshold) || (m23 >= highThreshold) ||
             (m31 >= highThreshold) || (m32 >= highThreshold) || (m33 >= highThreshold))
         {
-            half4 blendColor = PRIMARY_COLOR;
+            const half4 blendColor = PRIMARY_COLOR;
             color *= (1.0 - blendColor.a);
             color += (blendColor.rgb * blendColor.a);
         } else {
-            half4 blendColor = SECONDARY_COLOR;
+            const half4 blendColor = SECONDARY_COLOR;
             color *= (1.0 - blendColor.a);
             color += (blendColor.rgb * blendColor.a);
         }
@@ -161,14 +161,14 @@ fragment half4 CannyComic(FILTER_SHADER_ARGS)
 {
     // parameters that define the comic effect
 #define LINE_SLOPE -0.8h
-#define LINE_INTERVAL 30.0h
-#define LINE_STRENGTH 2.0h
+#define LINE_INTERVAL 60.0h
+#define LINE_STRENGTH 4.0h
 #define BLACK_THRESHOLD 0.2h
 #define WHITE_THRESHOLD 0.6h
-    half highThreshold = HIGH_THRESHOLD * 2.0   ;
+    const half highThreshold = HIGH_THRESHOLD;
     
     bool result = false;
-    half m22 = lastStage.sample(bilinear, inFrag.m_TexCoord).r;
+    const half m22 = lastStage.sample(bilinear, inFrag.m_TexCoord).r;
     half3 color;
 
     if (m22 >= highThreshold)
@@ -206,9 +206,9 @@ fragment half4 CannyComic(FILTER_SHADER_ARGS)
             color = SECONDARY_COLOR.rgb;
         } else
         {
-            half2 pixel = half2(inFrag.m_TexCoord) * half2(lastStage.get_width(),lastStage.get_height());
-            half b = LINE_SLOPE * pixel.x - pixel.y;
-            color = (floor(fmod(b,LINE_INTERVAL)) - LINE_STRENGTH  > 0.0) ? PRIMARY_COLOR.rgb : SECONDARY_COLOR.rgb;
+            const half2 pixel = half2(inFrag.m_TexCoord) * half2(lastStage.get_width(),lastStage.get_height());
+            const half b = LINE_SLOPE * pixel.x - pixel.y;
+            color = ((floor(fmod(b,LINE_INTERVAL)) - LINE_STRENGTH)  > 0.0) ? PRIMARY_COLOR.rgb : SECONDARY_COLOR.rgb;
         }
     }
     return half4(color,1.0);

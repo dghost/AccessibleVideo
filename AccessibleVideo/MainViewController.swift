@@ -53,7 +53,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
     fileprivate var _filterImage = UIImageView(image: UIImage(named: "VideoFilter"))
     fileprivate var _colorImage = UIImageView(image: UIImage(named: "ColorFilter"))
     
-    lazy fileprivate var _defaults = NSUbiquitousKeyValueStore.default()
+    lazy fileprivate var _defaults = NSUbiquitousKeyValueStore.default
     fileprivate var _defaultsTimer:Timer? = nil
     
     fileprivate var _uiTimer:Timer? = nil
@@ -74,8 +74,8 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
     
     deinit {
         writeDefaults()
-        NotificationCenter.default.removeObserver(self, name: NSNotification.Name.UIApplicationWillEnterForeground, object: nil)
-        NotificationCenter.default.removeObserver(self, name: NSNotification.Name.UIApplicationDidEnterBackground, object: nil)
+        NotificationCenter.default.removeObserver(self, name: UIApplication.willEnterForegroundNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: UIApplication.didEnterBackgroundNotification, object: nil)
         NotificationCenter.default.removeObserver(self, name: UserDefaults.didChangeNotification, object:nil)
     }
     
@@ -103,26 +103,29 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
 
         tapGesture.require(toFail: longPressGesture)
         
-        NotificationCenter.default.addObserver(self, selector: #selector(MainViewController.willEnterForeground(_:)), name: NSNotification.Name.UIApplicationWillEnterForeground, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(MainViewController.didEnterBackground(_:)), name: NSNotification.Name.UIApplicationDidEnterBackground, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(MainViewController.willEnterForeground(_:)), name: UIApplication.willEnterForegroundNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(MainViewController.didEnterBackground(_:)), name: UIApplication.didEnterBackgroundNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(MainViewController.externalUpdate(_:)), name:
             NSUbiquitousKeyValueStore.didChangeExternallyNotification
             , object: nil)
         
-        renderer = FilterRenderer(viewController: self)
-        
         // cast view as MetalView type
-        renderview = view as! MTKView
+        renderview = (view as! MTKView)
+        
+        let size = renderview.drawableSize
+        
+        renderer = FilterRenderer(viewController: self, initialWidth: Double(size.width), initialHeight: Double(size.height))
         
         // set up the renderer and set the view delegate
         renderview.delegate = renderer
         renderview.device = renderer.device
         renderview.preferredFramesPerSecond = 60
         renderview.framebufferOnly = true
-        
+
         // set up the camera controller and set the delegate
         camera.delegate = renderer
         
+        renderer.setViewSize(width: Double(size.width), height: Double(size.height))
         loadDefaults()
         
         startRenderLoop()
@@ -142,7 +145,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         enableVideo(false)
     }
     
-    func willEnterForeground(_ sender : AnyObject) {
+    @objc func willEnterForeground(_ sender : AnyObject) {
         enableVideo(true)
         _defaults.synchronize()
         loadDefaults()
@@ -153,7 +156,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         }
     }
     
-    func didEnterBackground(_ sender : AnyObject) {
+    @objc func didEnterBackground(_ sender : AnyObject) {
         writeDefaults()
         enableVideo(false)
     }
@@ -271,35 +274,35 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
     
     func setSwipeFunctions(_ orientation:UIInterfaceOrientation) {
         if (_isiPad) {
-            _swipeActions[UISwipeGestureRecognizerDirection.left.rawValue] = nextVideoFilter
-            _swipeActions[UISwipeGestureRecognizerDirection.right.rawValue] = prevVideoFilter
-            _swipeActions[UISwipeGestureRecognizerDirection.down.rawValue] = nextColorFilter
-            _swipeActions[UISwipeGestureRecognizerDirection.up.rawValue] = prevColorFilter
+            _swipeActions[UISwipeGestureRecognizer.Direction.left.rawValue] = nextVideoFilter
+            _swipeActions[UISwipeGestureRecognizer.Direction.right.rawValue] = prevVideoFilter
+            _swipeActions[UISwipeGestureRecognizer.Direction.down.rawValue] = nextColorFilter
+            _swipeActions[UISwipeGestureRecognizer.Direction.up.rawValue] = prevColorFilter
         } else {
             switch(orientation) {
             case .portrait:
-                _swipeActions[UISwipeGestureRecognizerDirection.left.rawValue] = nextVideoFilter
-                _swipeActions[UISwipeGestureRecognizerDirection.right.rawValue] = prevVideoFilter
-                _swipeActions[UISwipeGestureRecognizerDirection.up.rawValue] = nextColorFilter
-                _swipeActions[UISwipeGestureRecognizerDirection.down.rawValue] = prevColorFilter
+                _swipeActions[UISwipeGestureRecognizer.Direction.left.rawValue] = nextVideoFilter
+                _swipeActions[UISwipeGestureRecognizer.Direction.right.rawValue] = prevVideoFilter
+                _swipeActions[UISwipeGestureRecognizer.Direction.up.rawValue] = nextColorFilter
+                _swipeActions[UISwipeGestureRecognizer.Direction.down.rawValue] = prevColorFilter
                 break;
             case .portraitUpsideDown:
-                _swipeActions[UISwipeGestureRecognizerDirection.right.rawValue] = nextVideoFilter
-                _swipeActions[UISwipeGestureRecognizerDirection.left.rawValue] = prevVideoFilter
-                _swipeActions[UISwipeGestureRecognizerDirection.down.rawValue] = nextColorFilter
-                _swipeActions[UISwipeGestureRecognizerDirection.up.rawValue] = prevColorFilter
+                _swipeActions[UISwipeGestureRecognizer.Direction.right.rawValue] = nextVideoFilter
+                _swipeActions[UISwipeGestureRecognizer.Direction.left.rawValue] = prevVideoFilter
+                _swipeActions[UISwipeGestureRecognizer.Direction.down.rawValue] = nextColorFilter
+                _swipeActions[UISwipeGestureRecognizer.Direction.up.rawValue] = prevColorFilter
                 break;
             case .landscapeLeft:
-                _swipeActions[UISwipeGestureRecognizerDirection.up.rawValue] = nextVideoFilter
-                _swipeActions[UISwipeGestureRecognizerDirection.down.rawValue] = prevVideoFilter
-                _swipeActions[UISwipeGestureRecognizerDirection.left.rawValue] = nextColorFilter
-                _swipeActions[UISwipeGestureRecognizerDirection.right.rawValue] = prevColorFilter
+                _swipeActions[UISwipeGestureRecognizer.Direction.up.rawValue] = nextVideoFilter
+                _swipeActions[UISwipeGestureRecognizer.Direction.down.rawValue] = prevVideoFilter
+                _swipeActions[UISwipeGestureRecognizer.Direction.left.rawValue] = nextColorFilter
+                _swipeActions[UISwipeGestureRecognizer.Direction.right.rawValue] = prevColorFilter
                 break;
             case .landscapeRight:
-                _swipeActions[UISwipeGestureRecognizerDirection.up.rawValue] = nextVideoFilter
-                _swipeActions[UISwipeGestureRecognizerDirection.down.rawValue] = prevVideoFilter
-                _swipeActions[UISwipeGestureRecognizerDirection.right.rawValue] = nextColorFilter
-                _swipeActions[UISwipeGestureRecognizerDirection.left.rawValue] = prevColorFilter
+                _swipeActions[UISwipeGestureRecognizer.Direction.up.rawValue] = nextVideoFilter
+                _swipeActions[UISwipeGestureRecognizer.Direction.down.rawValue] = prevVideoFilter
+                _swipeActions[UISwipeGestureRecognizer.Direction.right.rawValue] = nextColorFilter
+                _swipeActions[UISwipeGestureRecognizer.Direction.left.rawValue] = prevColorFilter
                 break;
             default:
                 break;
@@ -347,10 +350,10 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         // coalesce writes to the iCloud key/value store to only occure once every 2 seconds at max
         _defaultsTimer?.invalidate()
         _defaultsTimer = Timer(timeInterval: TimeInterval(2.0), target: self, selector: #selector(MainViewController.writeDefaults), userInfo: nil, repeats: false)
-        RunLoop.current.add(_defaultsTimer!, forMode: RunLoopMode.defaultRunLoopMode)
+        RunLoop.current.add(_defaultsTimer!, forMode: RunLoop.Mode.default)
     }
     
-    func writeDefaults() {
+    @objc func writeDefaults() {
         _defaultsTimer = nil
         
         var changed:Bool = false
@@ -412,7 +415,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         videoFilter = _defaults.string(forKey: "videoFilter") ?? ""
     }
     
-    func externalUpdate(_ notification:Notification) {
+    @objc func externalUpdate(_ notification:Notification) {
         
         
         // read in the updates
@@ -493,11 +496,11 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         
         if (autoHideUI) {
             _uiTimer = Timer(timeInterval: TimeInterval(2.0), target: self, selector: #selector(MainViewController.hideUI), userInfo: nil, repeats: false)
-            RunLoop.current.add(_uiTimer!, forMode: RunLoopMode.defaultRunLoopMode)
+            RunLoop.current.add(_uiTimer!, forMode: RunLoop.Mode.default)
         }
     }
     
-    func hideUI() {
+    @objc func hideUI() {
         enableUI = false
     }
     
@@ -508,7 +511,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
             if enableUI != newValue {
                 if _settingsView.isHidden == newValue {
                     _settingsView.layer.shouldRasterize = false
-                    UIView.transition(with: _settingsView, duration: 0.25, options: UIViewAnimationOptions.transitionCrossDissolve,
+                    UIView.transition(with: _settingsView, duration: 0.25, options: UIView.AnimationOptions.transitionCrossDissolve,
                         animations: {
                         () -> Void in
                         self._settingsView.isHidden = !newValue
@@ -525,7 +528,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
                 if cameraEnable == _switchView.isHidden {
                     _switchView.layer.shouldRasterize = false
 
-                    UIView.transition(with: _switchView, duration: 0.25, options: UIViewAnimationOptions.transitionCrossDissolve,
+                    UIView.transition(with: _switchView, duration: 0.25, options: UIView.AnimationOptions.transitionCrossDissolve,
                         animations: {
                         () -> Void in
                             self._switchView.isHidden = !cameraEnable
@@ -548,6 +551,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         {
             _currentVideoFilter = filter
             renderer.setVideoFilter(filter)
+            _filters.videoFilters.setFilter(name: filter.name)
             showOverlayWithText(filter.name, andImageView: _filterImage)
             saveDefaults()
         }
@@ -573,7 +577,6 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         {
             _currentColorFilter = newFilter
             renderer.setColorFilter(newFilter)
-
             showOverlayWithText(newFilter.name, andImageView: _colorImage)
             saveDefaults()
         }
@@ -600,6 +603,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
             if let filter = _filters.videoFilters.getFilter(name: newValue)
             {
                 setVideoFilter(filter)
+                _filters.videoFilters.setFilter(name: filter.name)
             }
         }
     }
@@ -612,6 +616,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
             if let filter = _filters.inputFilters.getFilter(name: newValue)
             {
                 setColorFilter(filter)
+                _filters.inputFilters.setFilter(name: filter.name)
             }
         }
     }
@@ -675,7 +680,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
             } else {
                 if _settingsDelegate == nil && enableUI {
                     _uiTimer = Timer(timeInterval: TimeInterval(2.0), target: self, selector: #selector(MainViewController.hideUI), userInfo: nil, repeats: false)
-                    RunLoop.current.add(_uiTimer!, forMode: RunLoopMode.defaultRunLoopMode)
+                    RunLoop.current.add(_uiTimer!, forMode: RunLoop.Mode.default)
                 }
             }
             _settingsDelegate?.setAutoHide(autoHideUI)
@@ -701,7 +706,7 @@ class MainViewController: UIViewController, UIGestureRecognizerDelegate, UIPopov
         }
     }
     @IBAction func longPressRecognizer(_ sender: UILongPressGestureRecognizer) {
-        if sender.state == UIGestureRecognizerState.began {
+        if sender.state == UIGestureRecognizer.State.began {
             lock = !lock
         }
     }

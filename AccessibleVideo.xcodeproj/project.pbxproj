@@ -14,7 +14,6 @@
 		DF58E3F71A47EBF900020B1C /* FilterBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF58E3F61A47EBF900020B1C /* FilterBuffer.swift */; };
 		DF6A115019C8091C00D20618 /* Base.metal in Sources */ = {isa = PBXBuildFile; fileRef = DF6A114F19C8091C00D20618 /* Base.metal */; };
 		DF6A115419C8109F00D20618 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DF6A115319C8109F00D20618 /* AVFoundation.framework */; };
-		DF6A115619C810B000D20618 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DF6A115519C810B000D20618 /* CoreVideo.framework */; };
 		DF847FD91A11FE9A00AD6068 /* Canny.metal in Sources */ = {isa = PBXBuildFile; fileRef = DF847FD81A11FE9A00AD6068 /* Canny.metal */; };
 		DF9C846A1A4EB68A009C962B /* ColorBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF9C84691A4EB68A009C962B /* ColorBuffer.swift */; };
 		DF9C846C1A4F5C50009C962B /* BufferTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF9C846B1A4F5C50009C962B /* BufferTypes.swift */; };
@@ -27,13 +26,14 @@
 		DFD2201019C643BC00913975 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DFD2200E19C643BC00913975 /* Main.storyboard */; };
 		DFD2201219C643BC00913975 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DFD2201119C643BC00913975 /* Images.xcassets */; };
 		DFD2201519C643BC00913975 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = DFD2201319C643BC00913975 /* LaunchScreen.xib */; };
-		DFD2202B19C6462800913975 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DFD2202A19C6462800913975 /* Metal.framework */; };
 		DFD2202D19C6478D00913975 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DFD2202C19C6478D00913975 /* QuartzCore.framework */; };
 		DFE69F2F19E0EE140072EFAC /* CameraController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFE69F2E19E0EE140072EFAC /* CameraController.swift */; };
 		DFE69F3119E0EE870072EFAC /* FilterRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFE69F3019E0EE870072EFAC /* FilterRenderer.swift */; };
 		DFF6E11A1A104E36009A3CD8 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFF6E1191A104E36009A3CD8 /* SettingsViewController.swift */; };
 		DFF6E11E1A10796D009A3CD8 /* Blur.metal in Sources */ = {isa = PBXBuildFile; fileRef = DFF6E11D1A10796D009A3CD8 /* Blur.metal */; };
-		DFFEE88F19E207B700D19FFA /* MetalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFFEE88E19E207B700D19FFA /* MetalView.swift */; };
+		DFF9C07820CA3AB600152510 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DF6A115519C810B000D20618 /* CoreVideo.framework */; };
+		DFF9C07920CA3AC600152510 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DFD2202A19C6462800913975 /* Metal.framework */; };
+		DFF9C07B20CA3AC700152510 /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DFF9C07A20CA3AC600152510 /* MetalKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -69,7 +69,7 @@
 		DFE69F3019E0EE870072EFAC /* FilterRenderer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FilterRenderer.swift; sourceTree = "<group>"; };
 		DFF6E1191A104E36009A3CD8 /* SettingsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		DFF6E11D1A10796D009A3CD8 /* Blur.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; name = Blur.metal; path = Shaders/Blur.metal; sourceTree = "<group>"; };
-		DFFEE88E19E207B700D19FFA /* MetalView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MetalView.swift; sourceTree = "<group>"; };
+		DFF9C07A20CA3AC600152510 /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,10 +77,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DF6A115619C810B000D20618 /* CoreVideo.framework in Frameworks */,
+				DFF9C07B20CA3AC700152510 /* MetalKit.framework in Frameworks */,
+				DFF9C07920CA3AC600152510 /* Metal.framework in Frameworks */,
+				DFF9C07820CA3AB600152510 /* CoreVideo.framework in Frameworks */,
 				DF6A115419C8109F00D20618 /* AVFoundation.framework in Frameworks */,
 				DFD2202D19C6478D00913975 /* QuartzCore.framework in Frameworks */,
-				DFD2202B19C6462800913975 /* Metal.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -105,6 +106,7 @@
 		DF6A115219C8108E00D20618 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				DFF9C07A20CA3AC600152510 /* MetalKit.framework */,
 				DF6A115519C810B000D20618 /* CoreVideo.framework */,
 				DF6A115319C8109F00D20618 /* AVFoundation.framework */,
 				DFD2202C19C6478D00913975 /* QuartzCore.framework */,
@@ -161,7 +163,6 @@
 				DFD2200E19C643BC00913975 /* Main.storyboard */,
 				DFD2200C19C643BC00913975 /* MainViewController.swift */,
 				DF9C846D1A4F634E009C962B /* Metal Renderer */,
-				DFFEE88E19E207B700D19FFA /* MetalView.swift */,
 				DFF6E1191A104E36009A3CD8 /* SettingsViewController.swift */,
 				DF6A115119C8092600D20618 /* Shaders */,
 				DFD2200819C643BC00913975 /* Supporting Files */,
@@ -209,14 +210,14 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0700;
-				LastUpgradeCheck = 0800;
+				LastUpgradeCheck = 1010;
 				ORGANIZATIONNAME = "Luke Groeninger";
 				TargetAttributes = {
 					DFD2200419C643BC00913975 = {
 						CreatedOnToolsVersion = 6.0;
 						DevelopmentTeam = G8X4XMPVS9;
-						LastSwiftMigration = 0820;
-						ProvisioningStyle = Manual;
+						LastSwiftMigration = 1000;
+						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
 							com.apple.iCloud = {
 								enabled = 1;
@@ -263,7 +264,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DFFEE88F19E207B700D19FFA /* MetalView.swift in Sources */,
 				DFF6E11E1A10796D009A3CD8 /* Blur.metal in Sources */,
 				DFE69F2F19E0EE140072EFAC /* CameraController.swift in Sources */,
 				DF317CC71C0BC5BB00CEF3D2 /* FilterModel.swift in Sources */,
@@ -314,14 +314,22 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
@@ -345,7 +353,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				PROVISIONING_PROFILE = "";
@@ -363,14 +371,22 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
@@ -387,8 +403,9 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
+				ONLY_ACTIVE_ARCH = NO;
 				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
@@ -405,18 +422,20 @@
 				CODE_SIGN_ENTITLEMENTS = AccessibleVideo/AccessibleVideo.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = G8X4XMPVS9;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = AccessibleVideo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_SWIFT_FLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.doomsdaytech.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.doomsdaytech.VidFilter;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "844e4de1-31f3-41ed-a714-ff03741587a1";
-				PROVISIONING_PROFILE_SPECIFIER = "Test Development";
+				PROVISIONING_PROFILE = "";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "AccessibleVideo-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
+				SWIFT_VERSION = 4.2;
 			};
 			name = Debug;
 		};
@@ -428,17 +447,19 @@
 				CODE_SIGN_ENTITLEMENTS = AccessibleVideo/AccessibleVideo.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = G8X4XMPVS9;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = AccessibleVideo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_SWIFT_FLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.doomsdaytech.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.doomsdaytech.VidFilter;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "844e4de1-31f3-41ed-a714-ff03741587a1";
-				PROVISIONING_PROFILE_SPECIFIER = "Test Development";
+				PROVISIONING_PROFILE = "";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "AccessibleVideo-Bridging-Header.h";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
+				SWIFT_VERSION = 4.2;
 			};
 			name = Release;
 		};

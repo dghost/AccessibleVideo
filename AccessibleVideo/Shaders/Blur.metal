@@ -47,10 +47,6 @@ fragment half4 BlurY(VertexOut        inFrag        [[ stage_in ]],
 //
 
 constant half weights[] = { 0.2270270270, 0.3162162162, 0.0702702703 };
-struct BlurParameters {
-    float2 xOffsets[3];
-    float2 yOffsets[3];
-};
 
 fragment half4 BlurX_HQ(VertexOut        inFrag        [[ stage_in ]],
                         texture2d<half>  sourceTexture [[ texture(0) ]],

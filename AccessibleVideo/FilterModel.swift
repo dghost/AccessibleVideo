@@ -149,7 +149,7 @@ class FilterManager<T:FilterProtocol>
                 filterArray.append(newFilter)
                 filterMap[newFilter.name] = newFilter
             } else {
-                print("Error instantiating malformed filter \(filter["Name"])")
+                print("Error instantiating malformed filter \(String(describing: filter["Name"]))")
             }
         }
         
@@ -169,6 +169,12 @@ class FilterManager<T:FilterProtocol>
             return filter
         }
         return nil
+    }
+    
+    func setFilter(name:String) {
+        if let index = _filterArray.index(where: { $0.name == name }) {
+            _currentFilter = index
+        }
     }
     
     func nextFilter() -> T? {

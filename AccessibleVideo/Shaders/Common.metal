@@ -17,6 +17,7 @@
 #include <metal_stdlib>
 #include <metal_pack>
 
+#include "ShaderStructs.h"
 using namespace metal;
 
 struct VertexIn
@@ -31,21 +32,8 @@ struct VertexOut
     float2 m_TexCoord [[ user(texturecoord) ]];
 };
 
-struct ColorParameters
-{
-    float3x3 yuvToRGB;
-};
-
-struct FilterParameters
-{
-    float lowThreshold;
-    float highThreshold;
-    uint primaryColor;
-    uint secondaryColor;
-};
-
-#define PRIMARY_COLOR unpack_unorm4x8_to_half(filterParameters->primaryColor)
-#define SECONDARY_COLOR unpack_unorm4x8_to_half(filterParameters->secondaryColor)
+#define PRIMARY_COLOR half4(filterParameters->primaryColor)
+#define SECONDARY_COLOR half4(filterParameters->secondaryColor)
 #define HIGH_THRESHOLD half(filterParameters->highThreshold)
 #define LOW_THRESHOLD half(filterParameters->lowThreshold)
 

@@ -82,7 +82,7 @@ class SettingsViewController: UIViewController, SettingsViewDelegate {
         }
     }
     
-    func performUnwind() {
+    @objc func performUnwind() {
         self.performSegue(withIdentifier: "unwind", sender: self)
     }
 

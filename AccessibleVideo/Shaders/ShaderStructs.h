@@ -9,32 +9,25 @@
 #ifndef ShaderStructs_h
 #define ShaderStructs_h
 
+#include <simd/simd.h>
+
 typedef struct
 {
-    float yuvToRGB[3][4];
+    matrix_float3x3 yuvToRGB;
 } ColorParameters;
 
 
 typedef struct
 {
-    unsigned char r, g, b, a;
-} Color;
-
-typedef struct
-{
+    vector_float4 primaryColor;
+    vector_float4 secondaryColor;
     float lowThreshold;
     float highThreshold;
-    Color primaryColor;
-    Color secondaryColor;
 } FilterParameters;
 
 typedef struct {
-    float x, y;
-} Offset;
-
-typedef struct {
-    Offset xOffsets[3];
-    Offset yOffsets[3];
+    vector_float2 xOffsets[3];
+    vector_float2 yOffsets[3];
 } BlurParameters;
 
 #endif /* ShaderStructs_h */

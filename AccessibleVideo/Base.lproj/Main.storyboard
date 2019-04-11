@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11762" systemVersion="16D17a" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
-    <device id="retina4_7" orientation="portrait">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+    <device id="retina5_9" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11757"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -18,7 +19,7 @@
                         <viewControllerLayoutGuide type="bottom" id="wfy-db-euE"/>
                     </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC" userLabel="View" customClass="MTKView">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view opaque="NO" clearsContextBeforeDrawing="NO" contentMode="center" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Ntr-TK-QKm" userLabel="Hud View">
@@ -91,9 +92,9 @@
                             <constraint firstAttribute="centerY" secondItem="Ntr-TK-QKm" secondAttribute="centerY" id="3Yi-NF-aoJ"/>
                             <constraint firstAttribute="trailing" secondItem="DCb-5q-9KH" secondAttribute="trailing" id="4hY-Iw-alt"/>
                             <constraint firstAttribute="trailing" secondItem="9qg-au-39x" secondAttribute="trailing" id="C9k-h1-Flr"/>
-                            <constraint firstAttribute="bottom" secondItem="DCb-5q-9KH" secondAttribute="bottom" id="Tjj-F0-RQ5"/>
+                            <constraint firstAttribute="bottomMargin" secondItem="DCb-5q-9KH" secondAttribute="bottom" id="Tjj-F0-RQ5"/>
                             <constraint firstAttribute="centerX" secondItem="Ntr-TK-QKm" secondAttribute="centerX" id="dZ5-tw-YfA"/>
-                            <constraint firstItem="9qg-au-39x" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="top" id="q7V-xR-qBw"/>
+                            <constraint firstItem="9qg-au-39x" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="topMargin" constant="-20" id="q7V-xR-qBw"/>
                         </constraints>
                         <connections>
                             <outletCollection property="gestureRecognizers" destination="i9Q-6i-Xeq" appends="YES" id="au4-yI-TIv"/>
@@ -164,10 +165,10 @@
             <objects>
                 <viewController modalPresentationStyle="overFullScreen" id="k6S-qf-155" customClass="SettingsViewController" customModule="AccessibleVideo" customModuleProvider="target" sceneMemberID="viewController">
                     <visualEffectView key="view" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="wZY-ew-ynl">
-                        <rect key="frame" x="0.0" y="64" width="375" height="603"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="724"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="oSK-nU-Bke">
-                            <rect key="frame" x="0.0" y="0.0" width="375" height="603"/>
+                            <rect key="frame" x="0.0" y="0.0" width="375" height="724"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
                                 <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0ND-ww-YcB" userLabel="Noise Switch">
@@ -259,11 +260,11 @@
                         <viewControllerLayoutGuide type="bottom" id="psh-T0-owv"/>
                     </layoutGuides>
                     <view key="view" opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="Z6H-E4-WtZ">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" clearsContextBeforeDrawing="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Reduce Noise" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fUn-hH-2JD">
-                                <rect key="frame" x="20" y="89" width="108" height="21"/>
+                                <rect key="frame" x="20" y="113" width="108" height="21"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="108" id="m57-Fn-OGs"/>
                                     <constraint firstAttribute="height" constant="21" id="ral-eo-bwN"/>
@@ -285,7 +286,7 @@
                                 </connections>
                             </switch>
                             <label opaque="NO" clearsContextBeforeDrawing="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Invert Screen" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="UGP-3d-ehd">
-                                <rect key="frame" x="20" y="130" width="166" height="21"/>
+                                <rect key="frame" x="20" y="154" width="166" height="21"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="21" id="Lj0-24-rOJ"/>
                                     <constraint firstAttribute="width" constant="166" id="sqQ-lO-BQr"/>
@@ -295,7 +296,7 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" clearsContextBeforeDrawing="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Automatically Hide UI" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fg5-9B-WzJ">
-                                <rect key="frame" x="20" y="171" width="166" height="21"/>
+                                <rect key="frame" x="20" y="195" width="166" height="21"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="21" id="l0W-Cm-mPY"/>
                                     <constraint firstAttribute="width" constant="166" id="xHb-S3-Kzo"/>
@@ -346,7 +347,7 @@
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="wgq-GK-dij" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="qgh-j1-1uh">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
+                        <rect key="frame" x="0.0" y="44" width="375" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <nil name="viewControllers"/>
@@ -364,7 +365,7 @@
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="ITm-cd-nKO" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="Alm-cF-RUH">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
+                        <rect key="frame" x="0.0" y="44" width="375" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <nil name="viewControllers"/>

@@ -14,8 +14,8 @@ import AVFoundation
 import UIKit
 
 protocol RendererControlDelegate {
-    var primaryColor:UIColor { get set }
-    var secondaryColor:UIColor { get set }
+    var primaryColor:float4 { get set }
+    var secondaryColor:float4 { get set }
     var invertScreen:Bool { get set }
     var applyBlur:Bool { get set }
     var highQuality:Bool { get }
@@ -29,6 +29,7 @@ class FilterRenderer: NSObject, MTKViewDelegate, CameraCaptureDelegate, Renderer
     var applyBlur:Bool = false
     
     var highQuality:Bool = false
+    
     
     fileprivate var _controller:UIViewController! = nil
     
@@ -114,10 +115,11 @@ class FilterRenderer: NSObject, MTKViewDelegate, CameraCaptureDelegate, Renderer
     
     fileprivate var _viewport:MTLViewport = MTLViewport()
     
-    init(viewController:UIViewController!) {
+    init(viewController:UIViewController!, initialWidth:Double, initialHeight:Double) {
         super.init()
         _controller = viewController
         setupRenderer()
+        setViewSize(width: initialWidth, height: initialHeight)
     }
     
     func setupRenderer()
@@ -185,7 +187,7 @@ class FilterRenderer: NSObject, MTKViewDelegate, CameraCaptureDelegate, Renderer
         _vertexStart[.portraitUpsideDown] = 18
         
         // create default shader library
-        _shaderLibrary = _device!.newDefaultLibrary()!
+        _shaderLibrary = _device!.makeDefaultLibrary()!
         print("Loading shader library...")
         for str in _shaderLibrary.functionNames {
             print("Found shader: \(str)")
@@ -266,7 +268,6 @@ class FilterRenderer: NSObject, MTKViewDelegate, CameraCaptureDelegate, Renderer
         bilinear.magFilter = .linear
         _samplerStates[1] = self._device!.makeSamplerState(descriptor:bilinear)
         
-
         // create the command queue
         _commandQueue = _device!.makeCommandQueue()
     }
@@ -274,6 +275,10 @@ class FilterRenderer: NSObject, MTKViewDelegate, CameraCaptureDelegate, Renderer
     // create a pipeline state descriptor for a vertex/fragment shader combo
     func pipelineStateFor(label:String!, fragmentShader:String!, vertexShader: String?) -> (MTLRenderPipelineState?, MTLRenderPipelineReflection?) {
         if let fragmentProgram = _shaderLibrary.makeFunction(name: fragmentShader), let vertexProgram = _shaderLibrary.makeFunction(name: vertexShader ?? "defaultVertex") {
+            if #available(iOS 10, *) {
+                fragmentProgram.label = "Fragment: " + fragmentShader
+                vertexProgram.label = "Vertex: " + vertexProgram.name
+            }
             let pipelineStateDescriptor = MTLRenderPipelineDescriptor()
             pipelineStateDescriptor.label = label
             pipelineStateDescriptor.vertexFunction = vertexProgram
@@ -290,7 +295,7 @@ class FilterRenderer: NSObject, MTKViewDelegate, CameraCaptureDelegate, Renderer
                 let pipelineState = try _device!.makeRenderPipelineState(descriptor: pipelineStateDescriptor, options: MTLPipelineOption.bufferTypeInfo, reflection: &info)
                 return (pipelineState, info)
             } catch let pipelineError as NSError {
-                print("Failed to create pipeline state for shaders \(vertexShader):\(fragmentShader) error \(pipelineError)")
+                print("Failed to create pipeline state for shaders \(String(describing: vertexShader)):\(String(describing: fragmentShader)) error \(pipelineError)")
             }
         }
         return (nil, nil)
@@ -336,36 +341,36 @@ class FilterRenderer: NSObject, MTKViewDelegate, CameraCaptureDelegate, Renderer
         let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPass.descriptor)
         
         let name:String = renderPass.pipeline.label ?? "Unnamed Render Pass"
-        renderEncoder.pushDebugGroup(name)
-        renderEncoder.label = name
+        renderEncoder?.pushDebugGroup(name)
+        renderEncoder?.label = name
         if let view = renderPass.viewport {
-            renderEncoder.setViewport(view)
+            renderEncoder?.setViewport(view)
         }
-        renderEncoder.setRenderPipelineState(renderPass.pipeline)
+        renderEncoder?.setRenderPipelineState(renderPass.pipeline)
         
-        renderEncoder.setVertexBuffer(_vertexBuffer, offset: 0, at: 0)
+        renderEncoder?.setVertexBuffer(_vertexBuffer, offset: 0, index: 0)
         
         for (index,(buffer, offset)) in renderPass.fragmentBuffers.enumerated() {
-            renderEncoder.setFragmentBuffer(buffer, offset: offset, at: index)
+            renderEncoder?.setFragmentBuffer(buffer, offset: offset, index: index)
         }
         
         renderPass.sourceTextures.withUnsafeBufferPointer() { buffer in
             let range = NSMakeRange(0, buffer.count)
             if let base = buffer.baseAddress {
-                renderEncoder.setFragmentTextures(base, with: range)
+                renderEncoder?.__setFragmentTextures(base, with: range)
             }
         }
         
         _samplerStates.withUnsafeBufferPointer() { buffer in
             let range = NSMakeRange(0, buffer.count)
             if let base = buffer.baseAddress {
-                renderEncoder.setFragmentSamplerStates(base, with: range)
+                renderEncoder?.__setFragmentSamplerStates(base, with: range)
             }
         }
         
-        renderEncoder.drawPrimitives(type: .triangle, vertexStart: renderPass.vertexIndex, vertexCount: 6, instanceCount: 1)
-        renderEncoder.popDebugGroup()
-        renderEncoder.endEncoding()
+        renderEncoder?.drawPrimitives(type: .triangle, vertexStart: renderPass.vertexIndex, vertexCount: 6, instanceCount: 1)
+        renderEncoder?.popDebugGroup()
+        renderEncoder?.endEncoding()
     }
     
     public func commitRenderPass(_ renderPass:RenderPass, closure: ((MTLCommandBuffer) -> ())? = nil)
@@ -377,10 +382,10 @@ class FilterRenderer: NSObject, MTKViewDelegate, CameraCaptureDelegate, Renderer
         
         // commit buffers to GPU
         if let cl = closure {
-            cl(commandBuffer)
+            cl(commandBuffer!)
         }
         
-        commandBuffer.commit()
+        commandBuffer?.commit()
     }
     
     public func commitRenderPasses(_ renderPasses:[RenderPass], closure: ((MTLCommandBuffer) -> ())? = nil)
@@ -397,10 +402,10 @@ class FilterRenderer: NSObject, MTKViewDelegate, CameraCaptureDelegate, Renderer
         
         // commit buffers to GPU
         if let cl = closure {
-            cl(commandBuffer)
+            cl(commandBuffer!)
         }
         
-        commandBuffer.commit()
+        commandBuffer?.commit()
     }
     
     public func draw(in view: MTKView) {
@@ -418,13 +423,10 @@ class FilterRenderer: NSObject, MTKViewDelegate, CameraCaptureDelegate, Renderer
             yuvTextures = _yuvTextures
         }
 
-        
         commitRenderPass(
             RenderPass(descriptor: _rgbDescriptor, pipeline: _currentColorFilter, vertexIndex: 0, fragmentBuffers:  [_colorArgs.bufferAndOffsetForElement(_currentColorBuffer)], sourceTextures: yuvTextures, viewport: nil)
         )
         
-        
-
         var blurTex = _rgbTexture!
         
         if applyBlur && _currentVideoFilterUsesBlur, let args = _blurArgs {
@@ -510,39 +512,26 @@ class FilterRenderer: NSObject, MTKViewDelegate, CameraCaptureDelegate, Renderer
     }
     
     public func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
+        setViewSize(width: Double(size.width), height: Double(size.height))
+    }
+    
+    public func setViewSize(width: Double, height: Double)
+    {
         if _rgbTexture != nil {
-            let iWidth = Double(_rgbTexture.width)
-            let iHeight = Double(_rgbTexture.height)
-            let aspect = iHeight / iWidth
+            let aspect = Double(_rgbTexture.height) / Double(_rgbTexture.width)
             
-            
-            if size.width > size.height {
-                let newHeight = Double(size.width) * aspect
-                let diff = (Double(size.height) - newHeight) * 0.5
-                _viewport = MTLViewport(originX: 0.0, originY: diff, width: Double(size.width), height: newHeight, znear: 0.0, zfar: 1.0)
+            if width > height {
+                let newHeight = width * aspect
+                let diff = (height - newHeight) * 0.5
+                _viewport = MTLViewport(originX: 0.0, originY: diff, width: width, height: newHeight, znear: 0.0, zfar: 1.0)
             } else {
-                let newHeight = Double(size.height) * aspect
-                let diff = (Double(size.width) - newHeight) * 0.5
-                _viewport = MTLViewport(originX: diff, originY: 0.0, width: newHeight, height: Double(size.height), znear: 0.0, zfar: 1.0)
+                let newWidth = height * aspect
+                let diff = (width - newWidth) * 0.5
+                _viewport = MTLViewport(originX: diff, originY: 0.0, width: newWidth, height: height, znear: 0.0, zfar: 1.0)
             }
-            
-            if _viewport.originX < 0.0 {
-                _viewport.originX = 0.0
-            }
-            if _viewport.originY < 0.0 {
-                _viewport.originY = 0.0
-            }
-            
-            if _viewport.width > Double(size.width) {
-                _viewport.width = Double(size.width)
-            }
-            
-            if _viewport.height > Double(size.height) {
-                _viewport.height = Double(size.height)
-            }
-
         }
     }
+    
     
     func setVideoFilter(_ filter:VideoFilter)
     {
@@ -599,6 +588,7 @@ class FilterRenderer: NSObject, MTKViewDelegate, CameraCaptureDelegate, Renderer
         
         for i in 0...1 {
             let texture = self._device!.makeTexture(descriptor: descriptor)
+            texture?.label = "Intermediate Texture " + String(i)
             let renderDescriptor = MTLRenderPassDescriptor()
             renderDescriptor.colorAttachments[0].texture = texture
             renderDescriptor.colorAttachments[0].loadAction = .dontCare
@@ -609,12 +599,14 @@ class FilterRenderer: NSObject, MTKViewDelegate, CameraCaptureDelegate, Renderer
         }
         
         _rgbTexture = _device!.makeTexture(descriptor: descriptor)
+        _rgbTexture.label = "RGB Texture"
         _rgbDescriptor = MTLRenderPassDescriptor()
         _rgbDescriptor.colorAttachments[0].texture = _rgbTexture
         _rgbDescriptor.colorAttachments[0].loadAction = .dontCare
         _rgbDescriptor.colorAttachments[0].storeAction = .store
         
         _blurTexture = _device!.makeTexture(descriptor: descriptor)
+        _blurTexture.label = "Blur Texture"
         _blurDescriptor = MTLRenderPassDescriptor()
         _blurDescriptor.colorAttachments[0].texture = _blurTexture
         _blurDescriptor.colorAttachments[0].loadAction = .dontCare
@@ -644,7 +636,9 @@ class FilterRenderer: NSObject, MTKViewDelegate, CameraCaptureDelegate, Renderer
                 CVMetalTextureCacheCreateTextureFromImage(kCFAllocatorDefault, tc, pixelBuffer, nil, MTLPixelFormat.rg8Unorm, uv_width, uv_height, 1, &uv_texture)
                 
                 let luma = CVMetalTextureGetTexture(y_texture!)!
+                luma.label = "Luma Texture"
                 let chroma = CVMetalTextureGetTexture(uv_texture!)!
+                chroma.label = "Chroma Texture"
                 _yuvTextures = [ luma, chroma ]
             }
         }
@@ -668,15 +662,15 @@ class FilterRenderer: NSObject, MTKViewDelegate, CameraCaptureDelegate, Renderer
         let texelHeight = 1.0 / Float32(_rgbTexture.height)
         
         currentBuffer.xOffsets = (
-            Offset(x: offsets[0] * texelWidth, y: 0),
-            Offset(x: offsets[1] * texelWidth, y: 0),
-            Offset(x: offsets[2] * texelWidth, y: 0)
+            float2(x: offsets[0] * texelWidth, y: 0),
+            float2(x: offsets[1] * texelWidth, y: 0),
+            float2(x: offsets[2] * texelWidth, y: 0)
         )
         
         currentBuffer.yOffsets = (
-            Offset(x: 0, y: offsets[0] * texelHeight),
-            Offset(x: 0, y: offsets[1] * texelHeight),
-            Offset(x: 0, y: offsets[2] * texelHeight)
+            float2(x: 0, y: offsets[0] * texelHeight),
+            float2(x: 0, y: offsets[1] * texelHeight),
+            float2(x: 0, y: offsets[2] * texelHeight)
         )
         _currentBlurBuffer += 1
         
@@ -689,29 +683,35 @@ class FilterRenderer: NSObject, MTKViewDelegate, CameraCaptureDelegate, Renderer
 
         let currentBuffer = _filterArgs[nextBuffer]
         if invertScreen {
-            currentBuffer.primaryColor?.inverseColor = primaryColor
-            currentBuffer.secondaryColor?.inverseColor = secondaryColor
+            currentBuffer.primaryColor = float4(1.0 - primaryColor.x,
+                                                1.0 - primaryColor.y,
+                                                1.0 - primaryColor.z,
+                                                primaryColor.w)
+            currentBuffer.secondaryColor = float4(1.0 - secondaryColor.x,
+                                                  1.0 - secondaryColor.y,
+                                                  1.0 - secondaryColor.z,
+                                                  secondaryColor.w)
         } else {
-            currentBuffer.primaryColor?.color = primaryColor
-            currentBuffer.secondaryColor?.color = secondaryColor
+            currentBuffer.primaryColor = primaryColor
+            currentBuffer.secondaryColor = secondaryColor
         }
         
         if highQuality {
             currentBuffer.lowThreshold = 0.05
-            currentBuffer.highThreshold = 0.10
+            currentBuffer.highThreshold = 0.15
         } else {
             currentBuffer.lowThreshold = 0.15
             currentBuffer.highThreshold = 0.25
         }
     }
     
-    var primaryColor:UIColor = UIColor(red: 0.0, green: 0.8, blue: 1.0, alpha: 0.75) {
+    var primaryColor:float4 = float4(0.0, 0.8, 1.0, 0.75) {
         didSet {
             setFilterBuffer()
         }
     }
     
-    var secondaryColor:UIColor = UIColor(red: 0.6, green: 0.0, blue: 1.0, alpha: 0.75){
+    var secondaryColor:float4 = float4(0.6, 0.0, 1.0, 0.75){
         didSet {
             setFilterBuffer()
         }
