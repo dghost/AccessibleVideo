@@ -172,7 +172,7 @@ class FilterManager<T:FilterProtocol>
     }
     
     func setFilter(name:String) {
-        if let index = _filterArray.index(where: { $0.name == name }) {
+        if let index = _filterArray.firstIndex(where: { $0.name == name }) {
             _currentFilter = index
         }
     }

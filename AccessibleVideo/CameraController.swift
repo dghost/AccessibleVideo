@@ -74,7 +74,7 @@ class CameraController:NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
         }
         set {
             if _captureDevice?.isTorchAvailable ?? false {
-                if let _ = try? _captureDevice?.lockForConfiguration() {
+                if let _ = ((try? _captureDevice?.lockForConfiguration()) as ()??) {
                     _captureDevice?.torchMode = newValue ? .on : .off
                     _captureDevice?.unlockForConfiguration()
                 }
@@ -173,7 +173,7 @@ class CameraController:NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
         
         for format in _supportedFormats! {
             _currentFormat = format
-            guard let _ = try? _captureDevice?.lockForConfiguration() else {
+            guard let _ = ((try? _captureDevice?.lockForConfiguration()) as ()??) else {
                 return false;
             }
             
